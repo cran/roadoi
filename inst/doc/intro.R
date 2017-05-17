@@ -1,12 +1,14 @@
 ## ------------------------------------------------------------------------
 library(roadoi)
-roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9", "10.1016/j.cognition.2014.07.007"))
+roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
+                             "10.1016/j.cognition.2014.07.007"), 
+                    email = "name@example.com")
 
 ## ------------------------------------------------------------------------
-roadoi::oadoi_fetch("10.1186/s12864-016-2566-9", email = "name@example.com")
-
-## ------------------------------------------------------------------------
-roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9", "10.1016/j.cognition.2014.07.007"), .progress = "text")
+roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
+                             "10.1016/j.cognition.2014.07.007"), 
+                    email = "name@example.com", 
+                    .progress = "text")
 
 ## ---- message=FALSE------------------------------------------------------
 library(dplyr)
@@ -33,7 +35,7 @@ random_dois %>%
   arrange(desc(pubs))
 
 ## ------------------------------------------------------------------------
-oa_df <- roadoi::oadoi_fetch(dois = random_dois$DOI)
+oa_df <- roadoi::oadoi_fetch(dois = random_dois$DOI, email = "name@example.com")
 
 ## ------------------------------------------------------------------------
 my_df <- dplyr::left_join(oa_df, random_dois, by = c("doi" = "DOI"))

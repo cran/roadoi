@@ -23,25 +23,31 @@ oaDOI uses different data sources to find open access full-texts including:
 
 ### Basic usage
 
-There is one major function to talk with oaDOI.org, `oadoi_fetch()`.
+There is one major function to talk with oaDOI.org, `oadoi_fetch()`, taking DOIs and your email address as required arguments.
 
 ```{r}
 library(roadoi)
-roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9", "10.1016/j.cognition.2014.07.007"))
+roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
+                             "10.1016/j.cognition.2014.07.007"), 
+                    email = "name@example.com")
 ```
+
+#### What's returned?
 
 According to the [oaDOI.org API specification](https://oadoi.org/api), the following variables with the following definitions are returned:
 
 * `_best_open_url`: Link to free full-text
-* `_closed_base_ids`: Ids of oai metadata records with closed access full-text links collected by the [Bielefeld Academic Search Engine (BASE)](https://www.base-search.net/) 
-* `_open_base_ids`: Ids of oai metadata records with open access full-text links collected by the [Bielefeld Academic Search Engine (BASE)](https://www.base-search.net/)
-* `_open_urls`: full-text url
 * `doi`: the requested DOI
 * `doi_resolver`: Possible values:
     + crossref
     + datacite
 * `evidence`: A phrase summarizing the step of the open access detection process where the `free_fulltext_url` was found.
+* `found_green` :logical indicating whether a self-archived copy in a repository was found
+* `found_hybrid`: logical indicating whether an open access
+ article was published in a toll-access journal
 * `free_fulltext_url`: The URL where we found a free-to-read version of the DOI. None when no free-to-read version was found.
+* `green_base_collections`: internal collection ID from the
+ Bielefeld Academic Search Engine (BASE)
 * `is_boai_license`: TRUE whenever the license indications Creative Commons - Attribution (CC BY), Creative Commons  CC - Universal(CC 0)) or Public Domain were found. These permissive licenses comply with the highly-regarded [BOAI definition of Open access](http://www.budapestopenaccessinitiative.org/)
 * `is_free_to_read`: TRUE whenever the free_fulltext_url is not None.
 * `is_subscription_journal`: TRUE whenever the journal is not in the Directory of Open Access Journals or DataCite. Please note that there might be a time-lag between the first publication of an open access journal and its registration in the DOAJ.
@@ -49,19 +55,31 @@ According to the [oaDOI.org API specification](https://oadoi.org/api), the follo
 * `oa_color`: Possible values:
     + green
     + gold
+    + blue
+* `_open_base_ids`: ids of oai metadata records with open access
+ full-text links collected by the Bielefeld Academic Search Engine (BASE) 
+* `_open_urls`: full-text urls
+* `reported_noncompliant_copies` links to free full-texts found provided by service often considered as non  compliant with open access policies and guidelines
 * `url`: the canonical DOI URL
 * `year`: year of publication
 
-Providing your email address when using this client is highly appreciated by oaDOI.org. It not only helps the maintainer of oaDOI.org, the non-profit [Impactstory](https://impactstory.org/), to inform you when something breaks, but also to demonstrate API usage to its funders. Simply use the `email` parameter for this purpose:
+#### Any API restrictions?
 
-```{r}
-roadoi::oadoi_fetch("10.1186/s12864-016-2566-9", email = "name@example.com")
+There are no API restrictions. However, providing your email address when using this client is required by oaDOI.org. Set email address in your `.Rprofile` file with the option `roadoi_email` when you are tired to type in your email address every time you want to call oadDOI.
+
+```r
+options(roadoi_email = "name@example.com")
 ```
 
-To follow your API call, and to estimate the time until completion, use the `.progress` parameter inherited from plyr to display a progress bar.
+#### Keeping track of crawling
+
+To follow your API call, and to estimate the time until completion, use the `.progress` parameter inherited from `plyr` to display a progress bar.
 
 ```{r}
-roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9", "10.1016/j.cognition.2014.07.007"), .progress = "text")
+roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
+                             "10.1016/j.cognition.2014.07.007"), 
+                    email = "name@example.com", 
+                    .progress = "text")
 ```
 
 ### Use Case: Studying the compliance with open access policies
@@ -108,7 +126,7 @@ random_dois %>%
 Now let's call oaDOI.org
 
 ```{r}
-oa_df <- roadoi::oadoi_fetch(dois = random_dois$DOI)
+oa_df <- roadoi::oadoi_fetch(dois = random_dois$DOI, email = "name@example.com")
 ```
 
 and merge the resulting information about open access full-text links with our Crossref metadata-set

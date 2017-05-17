@@ -4,15 +4,18 @@
 \alias{oadoi_fetch}
 \title{Fetch open access status information and full-text links from oaDOI}
 \usage{
-oadoi_fetch(dois = NULL, email = NULL, .progress = "none")
+oadoi_fetch(dois = NULL, email = getOption("roadoi_email"),
+  .progress = "none")
 }
 \arguments{
 \item{dois}{character vector, search by a single DOI or many DOIs.
 A rate limit of 100k requests per day is suggested. If you need to access
 more data, use the data dump \url{https://oadoi.org/api#dataset} instead.}
 
-\item{email}{character vector, tell oaDOI your email adress to get notified
-if something breaks. It also helps oaDOI to keep track of usage!}
+\item{email}{character vector, required! It is strongly encourage to tell
+oaDOI your email adress, so that they can track usage and notify you
+when something breaks. Set email address in your `.Rprofile` file with
+the option `roadoi_email` \code{options(roadoi_email = "name@example.com")}.}
 
 \item{.progress}{Shows the \code{plyr}-style progress bar.
 Options are "none", "text", "tk", "win", and "time".
@@ -25,34 +28,44 @@ and the following columns.
 
 \tabular{rll}{
  [,1] \tab `_best_open_url`   \tab link to free full-text \cr
- [,2] \tab `_closed_base_ids` \tab ids of oai metadata records with closed access
- full-text links collected by the Bielefeld Academic Search Engine (BASE) \cr
- [,3] \tab `_open_base_ids`   \tab  ids of oai metadata records with open access
- full-text links collected by the Bielefeld Academic Search Engine (BASE) \cr
- [,4] \tab `_open_urls`       \tab full-text url \cr
- [,5] \tab doi                \tab DOI \cr
- [,6] \tab doi_resolver       \tab DOI agency \cr
- [,7] \tab evidence           \tab A phrase summarizing the step of the
+ [,2] \tab doi                \tab DOI \cr
+ [,3] \tab doi_resolver       \tab DOI agency \cr
+ [,4] \tab evidence           \tab A phrase summarizing the step of the
  open access detection process where the full-text links were found. \cr
- [,8] \tab free_fulltext_url  \tab URL where the free version was found \cr
- [,9] \tab is_boai_license    \tab TRUE whenever the license indications are Creative
- Commons - Attribution (CC BY), Creative Commons CC - Universal(CC 0)) or Public
- Domain. These permissive licenses comply with the highly-regarded BOAI
- definition of Open access \cr
-[,10] \tab is_free_to_read    \tab TRUE if freely available full-text was found
- \cr
-[,11] \tab is_subscription_journal \tab TRUE if article is published in
-toll-access journal \cr
-[,12] \tab license      \tab Contains the name of the Creative Commons license
-associated with the free_fulltext_url, whenever one was found. \cr
-[,13] \tab oa_color           \tab OA delivered by journal (gold) or
-by repository (green) \cr
-[,14] \tab url                \tab the canonical DOI UR \cr
-[,15] \tab year               \tab publishing year \cr
+ [,5] \tab found_green        \tab logical indicating whether a self-archived
+ copy in a repository was found \cr
+ [,6] \tab found_hybrid       \tab logical indicating whether an open access
+ article was published in a toll-access journal \cr
+ [,7] \tab free_fulltext_url  \tab URL where the free version was found \cr
+ [,8] \tab green_base_collections \tab internal collection ID from the
+ Bielefeld Academic Search Engine (BASE) \cr
+ [,9] \tab is_boai_license    \tab TRUE whenever the license indications are
+ Creative Commons - Attribution (CC BY), Creative Commons CC - Universal(CC 0))
+ or Public Domain. These permissive licenses comply with the
+ highly-regarded Budapest Open Access Initiative (BOAI) definition of
+ open access \cr
+ [,10] \tab is_free_to_read  \tab TRUE if freely available full-text
+ was found \cr
+ [,11] \tab is_subscription_journal \tab TRUE if article is published in
+ toll-access journal \cr
+ [,12] \tab license          \tab Contains the name of the Creative
+ Commons license associated with the free_fulltext_url, whenever one
+ was found. \cr
+ [,13] \tab oa_color         \tab OA delivered by journal (gold),
+ by repository (green) or others (blue) \cr
+ [,14] \tab `_open_base_ids` \tab  ids of oai metadata records with open access
+ full-text links collected by the Bielefeld Academic Search Engine (BASE) \cr
+ [,15] \tab `_open_urls`      \tab full-text url \cr
+ [,16] \tab `reported_noncompliant_copies` \tab links to free full-texts found
+ provided by service often considered as not open access compliant, e.g.
+ ResearchGate \cr
+ [,17] \tab url               \tab the canonical DOI UR \cr
+ [,18] \tab year              \tab publishing year \cr
 }
 
-The columns \code{`_closed_base_ids`}, \code{`_open_base_ids`}, \code{`_open_urls`},
- are list-columns and may have multiple entries.
+The columns  \code{`_open_base_ids`},
+\code{`_open_urls`}, and \code{`reported_noncompliant_copies`},
+are list-columns and may have multiple entries.
 }
 \description{
 This is the main function to retrieve comprehensive open acccess status
@@ -65,7 +78,10 @@ For more info see \url{https://oadoi.org/api}.
 oadoi_fetch("10.1016/j.shpsc.2013.03.020")
 oadoi_fetch(dois = c("10.1016/j.jbiotec.2010.07.030",
 "10.1186/1471-2164-11-245"))
+
+# you can unnest list-columns with tidyr:
+tt \%>\%
+  tidyr::unnest(open_base_ids)
 }
 
 }
-
