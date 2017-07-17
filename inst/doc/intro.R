@@ -10,6 +10,11 @@ roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                     email = "name@example.com", 
                     .progress = "text")
 
+## ------------------------------------------------------------------------
+random_dois <-  c("ldld", "10.1038/ng.3260", "§dldl  ")
+purrr::map_df(random_dois, 
+              plyr::failwith(f = function(x) roadoi::oadoi_fetch(x, email ="name@example.com")))
+
 ## ---- message=FALSE------------------------------------------------------
 library(dplyr)
 library(rcrossref)
