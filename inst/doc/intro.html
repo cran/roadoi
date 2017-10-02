@@ -11,7 +11,7 @@
 
 <meta name="author" content="Najko Jahn" />
 
-<meta name="date" content="2017-07-17" />
+<meta name="date" content="2017-10-02" />
 
 <title>Introduction to roadoi</title>
 
@@ -119,81 +119,186 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Introduction to roadoi</h1>
 <h4 class="author"><em>Najko Jahn</em></h4>
-<h4 class="date"><em>2017-07-17</em></h4>
+<h4 class="date"><em>2017-10-02</em></h4>
 
 </div>
 
 
-<p>Open access copies of scholarly publications are sometimes hard to find. Some are published in open access journals. Others are made freely available as preprints before publication, and others are deposited in institutional repositories, digital archives maintained by universities and research institutions. This document guides you to roadoi, a R client that makes it easy to search for these open access copies by interfacing the <a href="https://oadoi.org/">oaDOI.org</a> service where DOIs are matched with full-text links in open access journals and archives.</p>
+<p>Open access copies of scholarly publications are sometimes hard to find. Some are published in open access journals. Others are made freely available as preprints before publication, and others are deposited in institutional repositories, digital archives maintained by universities and research institutions. This document guides you to roadoi, a R client that makes it easy to search for these open access copies by interfacing the <a href="https://oadoi.org/">oaDOI.org</a> service where DOIs are matched with freely available full-texts available from open access journals and archives.</p>
 <div id="about-oadoi.org" class="section level3">
 <h3>About oaDOI.org</h3>
 <p><a href="https://oadoi.org/">oaDOI.org</a>, developed and maintained by the <a href="https://oadoi.org/team">team of Impactstory</a>, is a non-profit service that finds open access copies of scholarly literature simply by looking up a DOI (Digital Object Identifier). It not only returns open access full-text links, but also helpful metadata about the open access status of a publication such as licensing or provenance information.</p>
-<p>oaDOI uses different data sources to find open access full-texts including:</p>
+<p>oaDOI.org uses different data sources to find open access full-texts including:</p>
 <ul>
 <li><a href="http://www.crossref.org/">Crossref</a>: a DOI registration agency serving major scholarly publishers.</li>
 <li><a href="https://www.datacite.org/">Datacite</a>: another DOI registration agency with main focus on research data</li>
 <li><a href="https://doaj.org/">Directory of Open Access Journals (DOAJ)</a>: a registry of open access journals</li>
 <li><a href="https://www.base-search.net/">Bielefeld Academic Search Engine (BASE)</a>: an aggregator of various OAI-PMH metadata sources. OAI-PMH is a protocol often used by open access journals and repositories.</li>
 </ul>
+<p>See Piwowar et al. (2017) for a comprehensive overview of oaDOI.org.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
 </div>
 <div id="basic-usage" class="section level3">
 <h3>Basic usage</h3>
-<p>There is one major function to talk with oaDOI.org, <code>oadoi_fetch()</code>, taking DOIs and your email address as required arguments.</p>
+<p>There is one major function to talk with oaDOI.org, <code>oadoi_fetch()</code>, taking a character vector of DOIs and your email address as required arguments.</p>
 <pre class="r"><code>library(roadoi)
 roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
                              &quot;10.1016/j.cognition.2014.07.007&quot;), 
                     email = &quot;name@example.com&quot;)</code></pre>
-<pre><code>## # A tibble: 2 x 22
-##                                                              `_best_open_url`
-##                                                                         &lt;chr&gt;
-## 1                                    http://doi.org/10.1186/s12864-016-2566-9
-## 2 http://pubman.mpdl.mpg.de/pubman/item/escidoc:2070098/component/escidoc:207
-## # ... with 21 more variables: `_closed_base_ids` &lt;list&gt;,
-## #   `_closed_urls` &lt;list&gt;, `_green_base_collections` &lt;list&gt;,
-## #   `_open_base_ids` &lt;list&gt;, `_open_urls` &lt;list&gt;, doi &lt;chr&gt;,
-## #   doi_resolver &lt;chr&gt;, evidence &lt;chr&gt;, found_green &lt;lgl&gt;,
-## #   found_hybrid &lt;lgl&gt;, free_fulltext_url &lt;chr&gt;, is_boai_license &lt;lgl&gt;,
-## #   is_free_to_read &lt;lgl&gt;, is_subscription_journal &lt;lgl&gt;, license &lt;chr&gt;,
-## #   oa_color &lt;chr&gt;, oa_color_long &lt;chr&gt;,
-## #   reported_noncompliant_copies &lt;list&gt;, url &lt;chr&gt;, version &lt;lgl&gt;,
-## #   year &lt;int&gt;</code></pre>
+<pre><code>## # A tibble: 2 x 13
+##                               doi best_oa_location     oa_locations
+##                             &lt;chr&gt;           &lt;list&gt;           &lt;list&gt;
+## 1       10.1186/s12864-016-2566-9 &lt;tibble [1 x 7]&gt; &lt;tibble [3 x 7]&gt;
+## 2 10.1016/j.cognition.2014.07.007 &lt;tibble [1 x 6]&gt; &lt;tibble [2 x 7]&gt;
+## # ... with 10 more variables: data_standard &lt;int&gt;, is_oa &lt;lgl&gt;,
+## #   journal_is_oa &lt;lgl&gt;, journal_issns &lt;chr&gt;, journal_name &lt;chr&gt;,
+## #   publisher &lt;chr&gt;, title &lt;chr&gt;, year &lt;chr&gt;, updated &lt;chr&gt;,
+## #   non_compliant &lt;list&gt;</code></pre>
 <div id="whats-returned" class="section level4">
 <h4>What’s returned?</h4>
-<p>According to the <a href="https://oadoi.org/api">oaDOI.org API specification</a>, the following variables with the following definitions are returned:</p>
-<ul>
-<li><code>_best_open_url</code>: Link to free full-text</li>
-<li><code>doi</code>: the requested DOI</li>
-<li><code>doi_resolver</code>: Possible values:
-<ul>
-<li>crossref</li>
-<li>datacite</li>
-</ul></li>
-<li><code>evidence</code>: A phrase summarizing the step of the open access detection process where the <code>free_fulltext_url</code> was found.</li>
-<li><code>found_green</code> :logical indicating whether a self-archived copy in a repository was found</li>
-<li><code>found_hybrid</code>: logical indicating whether an open access article was published in a toll-access journal</li>
-<li><code>free_fulltext_url</code>: The URL where we found a free-to-read version of the DOI. None when no free-to-read version was found.</li>
-<li><code>green_base_collections</code>: internal collection ID from the Bielefeld Academic Search Engine (BASE)</li>
-<li><code>is_boai_license</code>: TRUE whenever the license indications Creative Commons - Attribution (CC BY), Creative Commons CC - Universal(CC 0)) or Public Domain were found. These permissive licenses comply with the highly-regarded <a href="http://www.budapestopenaccessinitiative.org/">BOAI definition of Open access</a></li>
-<li><code>is_free_to_read</code>: TRUE whenever the free_fulltext_url is not None.</li>
-<li><code>is_subscription_journal</code>: TRUE whenever the journal is not in the Directory of Open Access Journals or DataCite. Please note that there might be a time-lag between the first publication of an open access journal and its registration in the DOAJ.</li>
-<li><code>license</code>: Contains the name of the <a href="https://creativecommons.org/">Creative Commons license</a> associated with the <code>free_fulltext_url</code>, whenever one was found. Example: “cc-by”.</li>
-<li><code>oa_color</code>: Possible values:
-<ul>
-<li>green</li>
-<li>gold</li>
-<li>blue</li>
-</ul></li>
-<li><code>_open_base_ids</code>: ids of oai metadata records with open access full-text links collected by the Bielefeld Academic Search Engine (BASE)</li>
-<li><code>_open_urls</code>: full-text urls</li>
-<li><code>reported_noncompliant_copies</code> links to free full-texts found provided by service often considered as non compliant with open access policies and guidelines</li>
-<li><code>url</code>: the canonical DOI URL</li>
-<li><code>year</code>: year of publication</li>
-</ul>
-<p>Note that fields to be returned might change according to the <a href="https://oadoi.org/api">oaDOI.org API specs</a></p>
+<p>The client supports API version 2. According to the <a href="https://oadoi.org/api/v2">oaDOI.org API specification</a>, the following variables with the following definitions are returned:</p>
+<table style="width:86%;">
+<colgroup>
+<col width="19%"></col>
+<col width="66%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"><strong>Column</strong></th>
+<th align="left"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>doi</code></td>
+<td align="left">DOI (always in lowercase)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>best_oa_location</code></td>
+<td align="left">list-column describing the best OA location. Algorithm prioritizes publisher hosted content (e.g. Hybrid or Gold)</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>oa_locations</code></td>
+<td align="left">list-column of all the OA locations.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>data_standard</code></td>
+<td align="left">Indicates the data collection approaches used for this resource. <code>1</code> mostly uses Crossref for hybrid detection. <code>2</code> uses more comprehensive hybrid detection methods.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>is_oa</code></td>
+<td align="left">Is there an OA copy (logical)?</td>
+</tr>
+<tr class="even">
+<td align="left"><code>journal_is_oa</code></td>
+<td align="left">Is the article published in a fully OA journal? Uses the Directory of Open Access Journals (DOAJ) as source.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>journal_issns</code></td>
+<td align="left">ISSNs</td>
+</tr>
+<tr class="even">
+<td align="left"><code>journal_name</code></td>
+<td align="left">Journal title</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>publisher</code></td>
+<td align="left">Publisher</td>
+</tr>
+<tr class="even">
+<td align="left"><code>title</code></td>
+<td align="left">Publication title.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>year</code></td>
+<td align="left">Year published.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>updated</code></td>
+<td align="left">Time when the data for this resource was last updated.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>non_compliant</code></td>
+<td align="left">Lists other full-text resources that are not hosted by either publishers or repositories.</td>
+</tr>
+</tbody>
+</table>
+<p>The columns <code>best_oa_location</code> and <code>oa_locations</code> are list-columns that contain useful metadata about the OA sources found by oaDOI. These are</p>
+<table style="width:86%;">
+<colgroup>
+<col width="19%"></col>
+<col width="66%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"><strong>Column</strong></th>
+<th align="left"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>evidence</code></td>
+<td align="left">How the OA location was found and is characterized by oaDOI?</td>
+</tr>
+<tr class="even">
+<td align="left"><code>host_type</code></td>
+<td align="left">OA full-text provided by <code>publisher</code> or <code>repository</code>.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>license</code></td>
+<td align="left">The license under which this copy is published</td>
+</tr>
+<tr class="even">
+<td align="left"><code>url</code></td>
+<td align="left">The URL where you can find this OA copy.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>versions</code></td>
+<td align="left">The content version accessible at this location following the DRIVER 2.0 Guidelines (<a href="https://wiki.surfnet.nl/display/DRIVERguidelines/DRIVER-VERSION+Mappings" class="uri">https://wiki.surfnet.nl/display/DRIVERguidelines/DRIVER-VERSION+Mappings</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>You can <a href="http://r4ds.had.co.nz/many-models.html#simplifying-list-columns">simplify these list-columns in at least two ways</a>.</p>
+<p>To get the full-text links from the list-column <code>best_oa_location</code>, you may want to use <code>purrr::map_chr()</code>.</p>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: 'dplyr'</code></pre>
+<pre><code>## The following objects are masked from 'package:stats':
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
+                             &quot;10.1016/j.cognition.2014.07.007&quot;), 
+                    email = &quot;name@example.com&quot;) %&gt;%
+  dplyr::mutate(urls = purrr::map_chr(best_oa_location, &quot;url&quot;)) %&gt;% 
+  .$urls</code></pre>
+<pre><code>## [1] &quot;https://bmcgenomics.biomedcentral.com/track/pdf/10.1186/s12864-016-2566-9?site=bmcgenomics.biomedcentral.com&quot;
+## [2] &quot;http://pubman.mpdl.mpg.de/pubman/item/escidoc:2070098/component/escidoc:2070097/Guerra_knoeferle_2014.pdf&quot;</code></pre>
+<p>If you want to gather all full-text links and to explore where these links are hosted, simplify the list-column <code>oa_locations</code> with <code>tidyr::unnest()</code>:</p>
+<pre class="r"><code>library(dplyr)
+roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
+                             &quot;10.1016/j.cognition.2014.07.007&quot;), 
+                    email = &quot;name@example.com&quot;) %&gt;%
+  tidyr::unnest(oa_locations) %&gt;% 
+  dplyr::mutate(
+    hostname = purrr::map(url, httr::parse_url) %&gt;% 
+                  purrr::map_chr(., &quot;hostname&quot;, .null = NA_integer_)
+                ) %&gt;% 
+  dplyr::mutate(hostname = gsub(&quot;www.&quot;, &quot;&quot;, hostname)) %&gt;% 
+  dplyr::count(hostname)</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##                        hostname     n
+##                           &lt;chr&gt; &lt;int&gt;
+## 1 bmcgenomics.biomedcentral.com     1
+## 2              ncbi.nlm.nih.gov     1
+## 3          pub.uni-bielefeld.de     2
+## 4            pubman.mpdl.mpg.de     1</code></pre>
+<p>Note that fields to be returned might change according to the <a href="https://oadoi.org/api/v2">oaDOI.org API specs</a></p>
 </div>
 <div id="any-api-restrictions" class="section level4">
 <h4>Any API restrictions?</h4>
-<p>There are no API restrictions. However, providing your email address when using this client is required by oaDOI.org. Set email address in your <code>.Rprofile</code> file with the option <code>roadoi_email</code> when you are too tired to type in your email address every time you want to call oadDOI.</p>
+<p>There are no API restrictions. However, providing your email address when using this client is required by oaDOI.org. Set email address in your <code>.Rprofile</code> file with the option <code>roadoi_email</code> when you are too tired to type in your email address every time you want to call oaDOI.org.</p>
 <pre class="r"><code>options(roadoi_email = &quot;name@example.com&quot;)</code></pre>
 </div>
 <div id="keeping-track-of-crawling" class="section level4">
@@ -210,42 +315,31 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
   |================================                                 |  50%
   |                                                                       
   |=================================================================| 100%</code></pre>
-<pre><code>## # A tibble: 2 x 22
-##                                                              `_best_open_url`
-##                                                                         &lt;chr&gt;
-## 1                                    http://doi.org/10.1186/s12864-016-2566-9
-## 2 http://pubman.mpdl.mpg.de/pubman/item/escidoc:2070098/component/escidoc:207
-## # ... with 21 more variables: `_closed_base_ids` &lt;list&gt;,
-## #   `_closed_urls` &lt;list&gt;, `_green_base_collections` &lt;list&gt;,
-## #   `_open_base_ids` &lt;list&gt;, `_open_urls` &lt;list&gt;, doi &lt;chr&gt;,
-## #   doi_resolver &lt;chr&gt;, evidence &lt;chr&gt;, found_green &lt;lgl&gt;,
-## #   found_hybrid &lt;lgl&gt;, free_fulltext_url &lt;chr&gt;, is_boai_license &lt;lgl&gt;,
-## #   is_free_to_read &lt;lgl&gt;, is_subscription_journal &lt;lgl&gt;, license &lt;chr&gt;,
-## #   oa_color &lt;chr&gt;, oa_color_long &lt;chr&gt;,
-## #   reported_noncompliant_copies &lt;list&gt;, url &lt;chr&gt;, version &lt;lgl&gt;,
-## #   year &lt;int&gt;</code></pre>
+<pre><code>## # A tibble: 2 x 13
+##                               doi best_oa_location     oa_locations
+##                             &lt;chr&gt;           &lt;list&gt;           &lt;list&gt;
+## 1       10.1186/s12864-016-2566-9 &lt;tibble [1 x 7]&gt; &lt;tibble [3 x 7]&gt;
+## 2 10.1016/j.cognition.2014.07.007 &lt;tibble [1 x 6]&gt; &lt;tibble [2 x 7]&gt;
+## # ... with 10 more variables: data_standard &lt;int&gt;, is_oa &lt;lgl&gt;,
+## #   journal_is_oa &lt;lgl&gt;, journal_issns &lt;chr&gt;, journal_name &lt;chr&gt;,
+## #   publisher &lt;chr&gt;, title &lt;chr&gt;, year &lt;chr&gt;, updated &lt;chr&gt;,
+## #   non_compliant &lt;list&gt;</code></pre>
 </div>
 <div id="catching-errors" class="section level4">
 <h4>Catching errors</h4>
-<p>oaDOI is a reliable API. However, this client follows <a href="https://CRAN.R-project.org/package=httr/vignettes/api-packages.html">Hadley Wickham’s Best practices for writing an API package</a> and throws an error when API does not return valid JSON or is not available. To catch these errors, you may want to use <a href="https://www.rdocumentation.org/packages/plyr/versions/1.8.4/topics/failwith">plyr’s <code>failwith()</code></a> function</p>
+<p>oaDOI is a reliable API. However, this client follows <a href="https://CRAN.R-project.org/package=httr/vignettes/api-packages.html">Hadley Wickham’s Best practices for writing an API package</a> and throws an error when the API does not return valid JSON or is not available. To catch these errors, you may want to use <a href="https://www.rdocumentation.org/packages/plyr/versions/1.8.4/topics/failwith">plyr’s <code>failwith()</code></a> function</p>
 <pre class="r"><code>random_dois &lt;-  c(&quot;ldld&quot;, &quot;10.1038/ng.3260&quot;, &quot;§dldl  &quot;)
 purrr::map_df(random_dois, 
               plyr::failwith(f = function(x) roadoi::oadoi_fetch(x, email =&quot;name@example.com&quot;)))</code></pre>
 <pre><code>## Warning: oaDOI request failed [404]
 ## 'ldld' is an invalid doi.  See http://doi.org/ldld</code></pre>
-<pre><code>## # A tibble: 1 x 22
-##                                                              `_best_open_url`
-##                                                                         &lt;chr&gt;
-## 1 https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polyte
-## # ... with 21 more variables: `_closed_base_ids` &lt;list&gt;,
-## #   `_closed_urls` &lt;list&gt;, `_green_base_collections` &lt;list&gt;,
-## #   `_open_base_ids` &lt;list&gt;, `_open_urls` &lt;list&gt;, doi &lt;chr&gt;,
-## #   doi_resolver &lt;chr&gt;, evidence &lt;chr&gt;, found_green &lt;lgl&gt;,
-## #   found_hybrid &lt;lgl&gt;, free_fulltext_url &lt;chr&gt;, is_boai_license &lt;lgl&gt;,
-## #   is_free_to_read &lt;lgl&gt;, is_subscription_journal &lt;lgl&gt;, license &lt;chr&gt;,
-## #   oa_color &lt;chr&gt;, oa_color_long &lt;chr&gt;,
-## #   reported_noncompliant_copies &lt;list&gt;, url &lt;chr&gt;, version &lt;lgl&gt;,
-## #   year &lt;int&gt;</code></pre>
+<pre><code>## # A tibble: 1 x 13
+##               doi best_oa_location     oa_locations data_standard is_oa
+##             &lt;chr&gt;           &lt;list&gt;           &lt;list&gt;         &lt;int&gt; &lt;lgl&gt;
+## 1 10.1038/ng.3260 &lt;tibble [1 x 6]&gt; &lt;tibble [1 x 7]&gt;             2  TRUE
+## # ... with 8 more variables: journal_is_oa &lt;lgl&gt;, journal_issns &lt;chr&gt;,
+## #   journal_name &lt;chr&gt;, publisher &lt;chr&gt;, title &lt;chr&gt;, year &lt;chr&gt;,
+## #   updated &lt;chr&gt;, non_compliant &lt;list&gt;</code></pre>
 </div>
 </div>
 <div id="use-case-studying-the-compliance-with-open-access-policies" class="section level3">
@@ -261,28 +355,29 @@ random_dois &lt;- rcrossref::cr_r(sample = 100) %&gt;%
   rcrossref::cr_works() %&gt;%
   .$data
 random_dois</code></pre>
-<pre><code>## # A tibble: 100 x 34
-##    alternative.id                            container.title    created
-##             &lt;chr&gt;                                      &lt;chr&gt;      &lt;chr&gt;
-##  1                Progress of Theoretical Physics Supplement 2007-12-13
-##  2             45                          Petroleum Science 2008-08-06
-##  3                                                           2016-09-27
-##  4                                             Technometrics 2006-05-09
-##  5                                     Shokubutsugaku Zasshi 2014-07-15
-##  6                                                           2016-08-30
-##  7                                                   Science 2002-07-27
-##  8                                                ChemInform 2010-09-09
-##  9           7629                          Applied Physics A 2013-02-21
-## 10     BF01535702                                   Genetica 2005-04-19
-## # ... with 90 more rows, and 31 more variables: deposited &lt;chr&gt;,
-## #   DOI &lt;chr&gt;, funder &lt;list&gt;, indexed &lt;chr&gt;, ISBN &lt;chr&gt;, ISSN &lt;chr&gt;,
-## #   issued &lt;chr&gt;, link &lt;list&gt;, member &lt;chr&gt;, page &lt;chr&gt;, prefix &lt;chr&gt;,
-## #   publisher &lt;chr&gt;, reference.count &lt;chr&gt;, score &lt;chr&gt;, source &lt;chr&gt;,
-## #   subject &lt;chr&gt;, title &lt;chr&gt;, type &lt;chr&gt;, URL &lt;chr&gt;, volume &lt;chr&gt;,
+<pre><code>## # A tibble: 100 x 35
+##                    alternative.id
+##                             &lt;chr&gt;
+##  1                               
+##  2                               
+##  3                               
+##  4                               
+##  5              10.1643/CI-11-013
+##  6                               
+##  7                               
+##  8              S0141022915300053
+##  9 agstm_1965_0005_0001_0147_0151
+## 10                               
+## # ... with 90 more rows, and 34 more variables: container.title &lt;chr&gt;,
+## #   created &lt;chr&gt;, deposited &lt;chr&gt;, DOI &lt;chr&gt;, funder &lt;list&gt;,
+## #   indexed &lt;chr&gt;, ISBN &lt;chr&gt;, ISSN &lt;chr&gt;, issue &lt;chr&gt;, issued &lt;chr&gt;,
+## #   link &lt;list&gt;, member &lt;chr&gt;, page &lt;chr&gt;, prefix &lt;chr&gt;, publisher &lt;chr&gt;,
+## #   reference.count &lt;chr&gt;, score &lt;chr&gt;, source &lt;chr&gt;, subject &lt;chr&gt;,
+## #   subtitle &lt;chr&gt;, title &lt;chr&gt;, type &lt;chr&gt;, URL &lt;chr&gt;, volume &lt;chr&gt;,
 ## #   assertion &lt;list&gt;, author &lt;list&gt;, `clinical-trial-number` &lt;list&gt;,
-## #   issue &lt;chr&gt;, license_date &lt;chr&gt;, license_URL &lt;chr&gt;,
+## #   update.policy &lt;chr&gt;, license_date &lt;chr&gt;, license_URL &lt;chr&gt;,
 ## #   license_delay.in.days &lt;chr&gt;, license_content.version &lt;chr&gt;,
-## #   update.policy &lt;chr&gt;, subtitle &lt;chr&gt;, archive &lt;chr&gt;</code></pre>
+## #   archive &lt;chr&gt;, abstract &lt;chr&gt;</code></pre>
 <p>Let’s see when these random publications were published</p>
 <pre class="r"><code>random_dois %&gt;%
   # convert to years
@@ -291,192 +386,146 @@ random_dois</code></pre>
   group_by(issued) %&gt;%
   summarize(pubs = n()) %&gt;%
   arrange(desc(pubs))</code></pre>
-<pre><code>## # A tibble: 48 x 2
+<pre><code>## # A tibble: 41 x 2
 ##    issued  pubs
 ##     &lt;dbl&gt; &lt;int&gt;
-##  1   2015     8
-##  2   2016     7
-##  3   2010     5
-##  4     NA     5
-##  5   2000     4
-##  6   2005     4
-##  7   2013     4
-##  8   1984     3
-##  9   1997     3
-## 10   1998     3
-## # ... with 38 more rows</code></pre>
+##  1   2014     8
+##  2     NA     8
+##  3   2009     7
+##  4   2003     6
+##  5   2012     6
+##  6   2007     4
+##  7   2010     4
+##  8   2015     4
+##  9   2016     4
+## 10   2017     4
+## # ... with 31 more rows</code></pre>
 <p>and of what type they are</p>
 <pre class="r"><code>random_dois %&gt;%
   group_by(type) %&gt;%
   summarize(pubs = n()) %&gt;%
   arrange(desc(pubs))</code></pre>
-<pre><code>## # A tibble: 7 x 2
+<pre><code>## # A tibble: 9 x 2
 ##                  type  pubs
 ##                 &lt;chr&gt; &lt;int&gt;
-## 1     journal-article    75
+## 1     journal-article    74
 ## 2        book-chapter    14
-## 3 proceedings-article     5
-## 4           component     2
-## 5              report     2
-## 6                book     1
-## 7       journal-issue     1</code></pre>
+## 3             dataset     5
+## 4 proceedings-article     2
+## 5                book     1
+## 6       journal-issue     1
+## 7               other     1
+## 8     reference-entry     1
+## 9              report     1</code></pre>
 </div>
 <div id="calling-oadoi.org" class="section level4">
 <h4>Calling oaDOI.org</h4>
 <p>Now let’s call oaDOI.org</p>
 <pre class="r"><code>oa_df &lt;- roadoi::oadoi_fetch(dois = random_dois$DOI, email = &quot;name@example.com&quot;)</code></pre>
 <pre><code>## Warning: oaDOI request failed [404]
-## '10.4028/0-87849-436-7.813' is an invalid doi.  See http://doi.org/10.4028/0-87849-436-7.813</code></pre>
-<p>and merge the resulting information about open access full-text links with our Crossref metadata-set</p>
-<pre class="r"><code>my_df &lt;- dplyr::left_join(oa_df, random_dois, by = c(&quot;doi&quot; = &quot;DOI&quot;))
-my_df</code></pre>
-<pre><code>## # A tibble: 99 x 55
-##                                    `_best_open_url` `_closed_base_ids`
-##                                               &lt;chr&gt;             &lt;list&gt;
-##  1        http://arxiv.org/pdf/hep-ph/9612217v1.pdf         &lt;list [0]&gt;
-##  2                                             &lt;NA&gt;         &lt;list [0]&gt;
-##  3 http://doi.org/10.1371/journal.ppat.1005883.g005         &lt;list [0]&gt;
-##  4                                             &lt;NA&gt;         &lt;list [0]&gt;
-##  5                                             &lt;NA&gt;         &lt;list [0]&gt;
-##  6                                             &lt;NA&gt;         &lt;list [0]&gt;
-##  7                                             &lt;NA&gt;         &lt;list [0]&gt;
-##  8                                             &lt;NA&gt;         &lt;list [0]&gt;
-##  9                                             &lt;NA&gt;         &lt;list [0]&gt;
-## 10                                             &lt;NA&gt;         &lt;list [0]&gt;
-## # ... with 89 more rows, and 53 more variables: `_closed_urls` &lt;list&gt;,
-## #   `_green_base_collections` &lt;list&gt;, `_open_base_ids` &lt;list&gt;,
-## #   `_open_urls` &lt;list&gt;, doi &lt;chr&gt;, doi_resolver &lt;chr&gt;, evidence &lt;chr&gt;,
-## #   found_green &lt;lgl&gt;, found_hybrid &lt;lgl&gt;, free_fulltext_url &lt;chr&gt;,
-## #   is_boai_license &lt;lgl&gt;, is_free_to_read &lt;lgl&gt;,
-## #   is_subscription_journal &lt;lgl&gt;, license &lt;chr&gt;, oa_color &lt;chr&gt;,
-## #   oa_color_long &lt;chr&gt;, reported_noncompliant_copies &lt;list&gt;, url &lt;chr&gt;,
-## #   version &lt;lgl&gt;, year &lt;int&gt;, alternative.id &lt;chr&gt;,
-## #   container.title &lt;chr&gt;, created &lt;chr&gt;, deposited &lt;chr&gt;, funder &lt;list&gt;,
-## #   indexed &lt;chr&gt;, ISBN &lt;chr&gt;, ISSN &lt;chr&gt;, issued &lt;chr&gt;, link &lt;list&gt;,
-## #   member &lt;chr&gt;, page &lt;chr&gt;, prefix &lt;chr&gt;, publisher &lt;chr&gt;,
-## #   reference.count &lt;chr&gt;, score &lt;chr&gt;, source &lt;chr&gt;, subject &lt;chr&gt;,
-## #   title &lt;chr&gt;, type &lt;chr&gt;, URL &lt;chr&gt;, volume &lt;chr&gt;, assertion &lt;list&gt;,
-## #   author &lt;list&gt;, `clinical-trial-number` &lt;list&gt;, issue &lt;chr&gt;,
-## #   license_date &lt;chr&gt;, license_URL &lt;chr&gt;, license_delay.in.days &lt;chr&gt;,
-## #   license_content.version &lt;chr&gt;, update.policy &lt;chr&gt;, subtitle &lt;chr&gt;,
-## #   archive &lt;chr&gt;</code></pre>
+## '10.17814/mechanik.2017.7.63' is an invalid doi.  See http://doi.org/10.17814/mechanik.2017.7.63</code></pre>
+<p>and merge the resulting information about open access full-text links with parts of our Crossref metadata-set</p>
+<pre class="r"><code>my_df &lt;- random_dois %&gt;%
+  select(DOI, type) %&gt;% 
+  left_join(oa_df, by = c(&quot;DOI&quot; = &quot;doi&quot;))</code></pre>
 </div>
 <div id="reporting" class="section level4">
 <h4>Reporting</h4>
 <p>After gathering the data, reporting with R is very straightforward. You can even generate dynamic reports using <a href="http://rmarkdown.rstudio.com/">R Markdown</a> and related packages, thus making your study reproducible and transparent for others.</p>
 <p>To display how many full-text links were found and which sources were used in a nicely formatted markdown-table using the <a href="https://yihui.name/knitr/"><code>knitr</code></a>-package:</p>
 <pre class="r"><code>my_df %&gt;%
-  group_by(evidence) %&gt;%
+  group_by(is_oa) %&gt;%
   summarise(Articles = n()) %&gt;%
   mutate(Proportion = Articles / sum(Articles)) %&gt;%
+  arrange(desc(Articles)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">is_oa</th>
+<th align="right">Articles</th>
+<th align="right">Proportion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="right">85</td>
+<td align="right">0.85</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="right">14</td>
+<td align="right">0.14</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">0.01</td>
+</tr>
+</tbody>
+</table>
+<p>How did oaDOI find those Open Access full-texts, which were characterized as best matches, and how are these OA types distributed over publication types?</p>
+<pre class="r"><code>my_df %&gt;%
+  filter(is_oa == TRUE) %&gt;%
+  tidyr::unnest(best_oa_location) %&gt;% 
+  group_by(evidence, type) %&gt;%
+  summarise(Articles = n()) %&gt;%
   arrange(desc(Articles)) %&gt;%
   knitr::kable()</code></pre>
 <table>
 <thead>
 <tr class="header">
 <th align="left">evidence</th>
+<th align="left">type</th>
 <th align="right">Articles</th>
-<th align="right">Proportion</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">closed</td>
-<td align="right">86</td>
-<td align="right">0.8686869</td>
+<td align="left">hybrid (via free pdf)</td>
+<td align="left">journal-article</td>
+<td align="right">4</td>
 </tr>
 <tr class="even">
 <td align="left">oa repository (via BASE)</td>
-<td align="right">6</td>
-<td align="right">0.0606061</td>
-</tr>
-<tr class="odd">
-<td align="left">oa journal (via journal title in doaj)</td>
+<td align="left">journal-article</td>
 <td align="right">3</td>
-<td align="right">0.0303030</td>
-</tr>
-<tr class="even">
-<td align="left">oa journal (via publisher name)</td>
-<td align="right">2</td>
-<td align="right">0.0202020</td>
 </tr>
 <tr class="odd">
 <td align="left">oa repository (via pmcid lookup)</td>
-<td align="right">2</td>
-<td align="right">0.0202020</td>
-</tr>
-</tbody>
-</table>
-<p>How many of them are provided as green or gold open access?</p>
-<pre class="r"><code>my_df %&gt;%
-  group_by(oa_color) %&gt;%
-  summarise(Articles = n()) %&gt;%
-  mutate(Proportion = Articles / sum(Articles)) %&gt;%
-  arrange(desc(Articles)) %&gt;%
-  knitr::kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">oa_color</th>
-<th align="right">Articles</th>
-<th align="right">Proportion</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">NA</td>
-<td align="right">86</td>
-<td align="right">0.8686869</td>
-</tr>
-<tr class="even">
-<td align="left">green</td>
-<td align="right">8</td>
-<td align="right">0.0808081</td>
-</tr>
-<tr class="odd">
-<td align="left">gold</td>
-<td align="right">5</td>
-<td align="right">0.0505051</td>
-</tr>
-</tbody>
-</table>
-<p>Let’s take a closer look and assess how green and gold is distributed over publication types?</p>
-<pre class="r"><code>my_df %&gt;%
-  filter(!evidence == &quot;closed&quot;) %&gt;% 
-  count(oa_color, type, sort = TRUE) %&gt;% 
-  knitr::kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">oa_color</th>
-<th align="left">type</th>
-<th align="right">n</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">green</td>
-<td align="left">journal-article</td>
-<td align="right">7</td>
-</tr>
-<tr class="even">
-<td align="left">gold</td>
 <td align="left">journal-article</td>
 <td align="right">3</td>
 </tr>
-<tr class="odd">
-<td align="left">gold</td>
-<td align="left">component</td>
+<tr class="even">
+<td align="left">hybrid (via crossref license)</td>
+<td align="left">journal-article</td>
 <td align="right">2</td>
 </tr>
+<tr class="odd">
+<td align="left">hybrid (via page says license)</td>
+<td align="left">journal-article</td>
+<td align="right">1</td>
+</tr>
 <tr class="even">
-<td align="left">green</td>
-<td align="left">book-chapter</td>
+<td align="left">oa repository (via BASE)</td>
+<td align="left">other</td>
 <td align="right">1</td>
 </tr>
 </tbody>
 </table>
 </div>
+<div id="more-examples" class="section level4">
+<h4>More examples</h4>
+<p>For more examples, see Piwowar et al. 2017.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> Together with the article, they shared their analysis of oaDOI-data as <a href="https://github.com/Impactstory/oadoi-paper1/">R Markdown supplement</a>.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Piwowar, H., Priem, J., Larivière, V., Alperin, J. P., Matthias, L., Norlander, B., … Haustein, S. (2017). The State of OA: A large-scale analysis of the prevalence and impact of Open Access articles (Version 1). PeerJ Preprints. <a href="https://doi.org/10.7287/peerj.preprints.3119v1" class="uri">https://doi.org/10.7287/peerj.preprints.3119v1</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Piwowar, H., Priem, J., Larivière, V., Alperin, J. P., Matthias, L., Norlander, B., … Haustein, S. (2017). The State of OA: A large-scale analysis of the prevalence and impact of Open Access articles (Version 1). PeerJ Preprints. <a href="https://doi.org/10.7287/peerj.preprints.3119v1" class="uri">https://doi.org/10.7287/peerj.preprints.3119v1</a><a href="#fnref2">↩</a></p></li>
+</ol>
 </div>
 
 

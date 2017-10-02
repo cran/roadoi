@@ -3,12 +3,12 @@ oadoi_baseurl <- function()
   "https://api.oadoi.org/"
 # API version
 oadoi_api_version <- function()
-  "1.3.0"
+  "v2"
 # If you require access to more data, please use the data dump
 api_limit <- 100000
 
 # user agent, so oaDOI can track the usage of this client
-ua <- httr::user_agent("https://github.com/njahn82/roadoi")
+ua <- httr::user_agent("https://github.com/ropensci/roadoi")
 
 #' Email checker for roadoi API
 #'
