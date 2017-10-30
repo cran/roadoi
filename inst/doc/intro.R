@@ -1,21 +1,25 @@
 ## ------------------------------------------------------------------------
 library(roadoi)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
-                             "10.1016/j.cognition.2014.07.007"), 
+                             "10.1103/physreve.88.012814"), 
                     email = "name@example.com")
 
 ## ------------------------------------------------------------------------
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
-                             "10.1016/j.cognition.2014.07.007"), 
+                             "10.1103/physreve.88.012814"), 
                     email = "name@example.com") %>%
-  dplyr::mutate(urls = purrr::map_chr(best_oa_location, "url")) %>% 
+  dplyr::mutate(
+    urls = purrr::map(best_oa_location, "url") %>% 
+                  purrr::map_if(purrr::is_empty, ~ NA_character_) %>% 
+                  purrr::flatten_chr()
+                ) %>%
   .$urls
 
 ## ------------------------------------------------------------------------
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
-                             "10.1016/j.cognition.2014.07.007"), 
+                             "10.1103/physreve.88.012814"), 
                     email = "name@example.com") %>%
   tidyr::unnest(oa_locations) %>% 
   dplyr::mutate(
@@ -27,7 +31,7 @@ roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
 
 ## ------------------------------------------------------------------------
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
-                             "10.1016/j.cognition.2014.07.007"), 
+                             "10.1103/physreve.88.012814"), 
                     email = "name@example.com", 
                     .progress = "text")
 
