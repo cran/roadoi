@@ -8,35 +8,34 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Open access copies of scholarly publications are sometimes hard to find. Some are published in open access journals. Others are made freely available as preprints before publication, and others are deposited in institutional repositories, digital archives maintained by universities and research institutions. This document guides you to roadoi, a R client that makes it easy to search for these open access copies by interfacing the [oaDOI.org](https://oadoi.org/) service where DOIs are matched with freely available full-texts available from open access journals and archives.
+Open access copies of scholarly publications are sometimes hard to find. Some are published in open access journals. Others are made freely available as preprints before publication, and others are deposited in institutional repositories, digital archives maintained by universities and research institutions. This document guides you to roadoi, a R client that makes it easy to search for these open access copies by interfacing the [Unpaywall](https://unpaywall.org/) service where DOIs are matched with freely available full-texts available from open access journals and archives.
 
-### About oaDOI.org
+### About Unpaywall
 
-[oaDOI.org](https://oadoi.org/), developed and maintained by the [team of Impactstory](https://oadoi.org/team), is a non-profit service that finds open access copies of scholarly literature simply by looking up a DOI (Digital Object Identifier). It not only returns open access full-text links, but also helpful metadata about the open access status of a publication such as licensing or provenance information.
+[Unpaywall](https://unpaywall.org/), developed and maintained by the [team of Impactstory](https://profiles.impactstory.org/about), is a non-profit service that finds open access copies of scholarly literature simply by looking up a DOI (Digital Object Identifier). It not only returns open access full-text links, but also helpful metadata about the open access status of a publication such as licensing or provenance information.
 
-oaDOI.org uses different data sources to find open access full-texts including:
+Unpaywall uses different data sources to find open access full-texts including:
 
 - [Crossref](http://www.crossref.org/): a DOI registration agency serving major scholarly publishers.
-- [Datacite](https://www.datacite.org/): another DOI registration agency with main focus on research data
 - [Directory of Open Access Journals (DOAJ)](https://doaj.org/): a registry of open access journals
 - Various OAI-PMH metadata sources. OAI-PMH is a protocol often used by open access journals and repositories such as arXiv and PubMed Central.
 
-See Piwowar et al. (2017) for a comprehensive overview of oaDOI.org.[^1]
+See Piwowar et al. (2017) for a comprehensive overview of Unpaywall.[^1]
 
 ### Basic usage
 
-There is one major function to talk with oaDOI.org, `oadoi_fetch()`, taking a character vector of DOIs and your email address as required arguments.
+There is one major function to talk with Unpaywall, `oadoi_fetch()`, taking a character vector of DOIs and your email address as required arguments.
 
 ```{r}
 library(roadoi)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com")
+                    email = "najko.jahn@gmail.com")
 ```
 
 #### What's returned?
 
-The client supports API version 2. According to the [oaDOI.org API specification](https://oadoi.org/api/v2), the following variables with the following definitions are returned:
+The client supports API version 2. According to the [Unpaywall Data Format](http://unpaywall.org/data-format), the following variables with the following definitions are returned:
 
 **Column**|**Description**
 |:------------|:----------------------------------------------
@@ -53,13 +52,14 @@ The client supports API version 2. According to the [oaDOI.org API specification
 `year`|Year published. 
 `updated`|Time when the data for this resource was last updated. 
 `non_compliant`|Lists other full-text resources that are not hosted by either publishers or repositories. 
+`authors`|Lists authors (if available)
 
 The columns  `best_oa_location` and  `oa_locations` are list-columns
-that contain useful metadata about the OA sources found by oaDOI. These are
+that contain useful metadata about the OA sources found by Unpaywall These are
 
 **Column**|**Description**
 |:------------|:----------------------------------------------
-`evidence`|How the OA location was found and is characterized by oaDOI?
+`evidence`|How the OA location was found and is characterized by Unpaywall?
 `host_type`|OA full-text provided by `publisher` or `repository`. 
 `license`|The license under which this copy is published
 `url`|The URL where you can find this OA copy.
@@ -73,7 +73,7 @@ To get the full-text links from the list-column `best_oa_location`, you may want
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com") %>%
+                    email = "najko.jahn@gmail.com") %>%
   dplyr::mutate(
     urls = purrr::map(best_oa_location, "url") %>% 
                   purrr::map_if(purrr::is_empty, ~ NA_character_) %>% 
@@ -88,25 +88,26 @@ If you want to gather all full-text links and to explore where these links are h
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com") %>%
+                    email = "najko.jahn@gmail.com") %>%
   tidyr::unnest(oa_locations) %>% 
   dplyr::mutate(
     hostname = purrr::map(url, httr::parse_url) %>% 
                   purrr::map_chr(., "hostname", .null = NA_integer_)
                 ) %>% 
-  dplyr::mutate(hostname = gsub("www.", "", hostname)) %>% 
-  dplyr::count(hostname)
+  dplyr::mutate(hostname = gsub("www.", "", hostname)) %>%
+  dplyr::group_by(hostname) %>%
+  dplyr::summarize(hosts = n())
 ```
 
 
-Note that fields to be returned might change according to the [oaDOI.org API specs](https://oadoi.org/api/v2)
+Note that fields to be returned might change according to the [Unpaywall API specs](http://unpaywall.org/products/api)
 
 #### Any API restrictions?
 
-There are no API restrictions. However, providing your email address when using this client is required by oaDOI.org. Set email address in your `.Rprofile` file with the option `roadoi_email` when you are too tired to type in your email address every time you want to call oaDOI.org.
+There are no API restrictions. However, providing your email address when using this client is required by Unpaywall. Set email address in your `.Rprofile` file with the option `roadoi_email` when you are too tired to type in your email address every time you want to call Unpaywall.
 
 ```r
-options(roadoi_email = "name@example.com")
+options(roadoi_email = "najko.jahn@gmail.com")
 ```
 
 #### Keeping track of crawling
@@ -116,18 +117,23 @@ To follow your API call, and to estimate the time until completion, use the `.pr
 ```{r}
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com", 
+                    email = "najko.jahn@gmail.com", 
                     .progress = "text")
 ```
 
 #### Catching errors
 
-oaDOI is a reliable API. However, this client follows [Hadley Wickham's Best practices for writing an API package](https://CRAN.R-project.org/package=httr/vignettes/api-packages.html) and throws an error when the API does not return valid JSON or is not available. To catch these errors, you may want to use [plyr's `failwith()`](https://www.rdocumentation.org/packages/plyr/versions/1.8.4/topics/failwith) function
+Unpaywall is a reliable API. However, this client follows [Hadley Wickham's Best practices for writing an API package](https://CRAN.R-project.org/package=httr/vignettes/api-packages.html) and throws an error when the API does not return valid JSON or is not available. To catch these errors, you may want to use [purrr's `safely()`](https://purrr.tidyverse.org/reference/safely.html) function
 
 ```{r}
 random_dois <-  c("ldld", "10.1038/ng.3260", "§dldl  ")
-purrr::map_df(random_dois, 
-              plyr::failwith(f = function(x) roadoi::oadoi_fetch(x, email ="name@example.com")))
+my_data <- purrr::map(random_dois, 
+              .f = purrr::safely(function(x) roadoi::oadoi_fetch(x, email ="najko.jahn@gmail.com")))
+# return results as data.frame
+purrr::map_df(my_data, "result")
+#show errors
+purrr::map(my_data, "error")
+
 ```
 
 ### Use Case: Studying the compliance with open access policies
@@ -169,12 +175,15 @@ random_dois %>%
   arrange(desc(pubs))
 ```
 
-#### Calling oaDOI.org
+#### Calling Unpaywall
 
-Now let's call oaDOI.org
+Now let's call Unpaywall. We are capturing possible errors.
 
 ```{r}
-oa_df <- roadoi::oadoi_fetch(dois = random_dois$DOI, email = "name@example.com")
+oa_df <- purrr::map(random_dois$DOI, .f = purrr::safely(
+  function(x) roadoi::oadoi_fetch(x, email = "najko.jahn@gmail.com")
+  )) %>%
+  purrr::map_df("result")
 ```
 
 and merge the resulting information about open access full-text links with parts of our Crossref metadata-set
@@ -200,7 +209,7 @@ my_df %>%
   knitr::kable()
 ```
 
-How did oaDOI find those Open Access full-texts, which were characterized as best matches, and how are these OA types distributed over publication types?
+How did Unpaywall find those Open Access full-texts, which were characterized as best matches, and how are these OA types distributed over publication types?
 
 ```{r, results='asis'}
 my_df %>%
@@ -214,6 +223,6 @@ my_df %>%
 
 #### More examples
 
-For more  examples, see Piwowar et al. 2017.[^1] Together with the article, they shared their analysis of oaDOI-data as [R Markdown supplement](https://github.com/Impactstory/oadoi-paper1/).
+For more  examples, see Piwowar et al. 2018.[^1] Together with the article, they shared their analysis of Unpaywall Data as [R Markdown supplement](https://github.com/Impactstory/oadoi-paper1/).
 
-[^1]: Piwowar, H., Priem, J., Larivière, V., Alperin, J. P., Matthias, L., Norlander, B., … Haustein, S. (2017). The State of OA: A large-scale analysis of the prevalence and impact of Open Access articles (Version 1). PeerJ Preprints.  <https://doi.org/10.7287/peerj.preprints.3119v1>
+[^1]: Piwowar, H., Priem, J., Larivière, V., Alperin, J. P., Matthias, L., Norlander, B., … Haustein, S. (2018). The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles. PeerJ, 6, e4375. <https://doi.org/10.7717/peerj.4375>

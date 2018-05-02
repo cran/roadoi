@@ -1,14 +1,15 @@
-#' Fetch open access status information and full-text links from oaDOI
+#' Fetch open access status information and full-text links using Unpaywall
 #'
 #' This is the main function to retrieve comprehensive open access status
-#' information from the oaDOI service. Please play nice with the API. At the
-#' moment only 100k request are suggested per user and day.
-#' For more info see \url{https://oadoi.org/api}.
+#' information from Unpaywall data service. Please play nice with the API.
+#' For each user, 100k calls per day are suggested. If you need to access
+#' more data, there is also a data dump available.
+#' For more info see \url{https://unpaywall.org/products/snapshot}.
 #'
 #' @param dois character vector, search by a single DOI or many DOIs.
 #'   A rate limit of 100k requests per day is suggested. If you need to access
-#'   more data, request the data dump \url{https://oadoi.org/api} instead.
-#' @param email character vector, mandatory! oaDOI requires your email address,
+#'   more data, request the data dump \url{https://unpaywall.org/dataset} instead.
+#' @param email character vector, mandatory! Unpaywall requires your email address,
 #'   so that they can track usage and notify you when something breaks.
 #'   Set email address in your `.Rprofile` file with
 #'   the option `roadoi_email` \code{options(roadoi_email = "name@example.com")}.
@@ -33,8 +34,10 @@
 #'  for this resource. \code{1} mostly uses Crossref for hybrid detection. \code{2}
 #'  uses more comprehensive hybrid detection methods. \cr
 #'  \code{is_oa}            \tab Is there an OA copy (logical)? \cr
-#'  \code{journal_is_oa}    \tab Is the article published in a fully OA journal?
-#'  Uses the Directory of Open Access Journals (DOAJ) as source. \cr
+#'  \code{genre}            \tab Publication type \cr
+#'  \code{journal_is_oa}    \tab Is the article published in a fully OA journal? \cr
+#'  \code{journal_is_in_doaj} \ Is the journal listed in
+#'   the Directory of Open Access Journals (DOAJ). \cr
 #'  \code{journal_issns}    \tab ISSNs, i.e. unique numbers to identify
 #'  journals. \cr
 #'  \code{journal_name}     \tab Journal title, not normalized. \cr
@@ -44,14 +47,17 @@
 #'  \code{updated}          \tab Time when the data for this resource was last updated. \cr
 #'  \code{non_compliant}    \tab Lists other full-text resources that are not
 #'  hosted by either publishers or repositories. \cr
+#'  \code{authors}          \tab Lists author information (if available) \cr
 #' }
 #'
 #' The columns  \code{best_oa_location} and  \code{oa_locations} are list-columns
-#' that contain useful metadata about the OA sources found by oaDOI. These are
+#' that contain useful metadata about the OA sources found by Unpaywall.
+#'
+#' These are:
 #'
 #' \tabular{ll}{
 #'  \code{evidence}        \tab How the OA location was found and is characterized
-#'   by oaDOI? \cr
+#'   by Unpaywall? \cr
 #'  \code{host_type}       \tab OA full-text provided by \code{publisher} or
 #'   \code{repository}. \cr
 #'  \code{license}         \tab The license under which this copy is published,
@@ -79,12 +85,17 @@ oadoi_fetch <-
            .progress = "none") {
     # input validation
     stopifnot(!is.null(dois))
+    # remove empty characters
+    if (any(dois %in% "")) {
+      dois <- dois[dois != ""]
+      warning("Removed empty characters from DOI vector")
+    }
     email <- val_email(email)
     if (length(dois) > api_limit)
       stop(
         "A rate limit of 100k requests per day is suggested.
         If you need to access more data, request the data dump
-        https://oadoi.org/api instead",
+        https://unpaywall.org/dataset",
         .call = FALSE
       )
     # Call API for every DOI, and return results as tbl_df
@@ -99,7 +110,7 @@ oadoi_fetch <-
 #'
 #' @param doi character vector,a DOI
 #' @param email character vector, required! It is strongly encourage to tell
-#'   oaDOI your email adress, so that they can track usage and notify you
+#'   Unpaywall your email adress, so that they can track usage and notify you
 #'   when something breaks. Set email address in your `.Rprofile` file with
 #'   the option `roadoi_email` \code{options(roadoi_email = "name@example.com")}.
 #' @return A tibble
@@ -111,14 +122,14 @@ oadoi_fetch_ <- function(doi = NULL, email = NULL) {
   u <- httr::modify_url(
     oadoi_baseurl(),
     query = list(email = email),
-    path = c(oadoi_api_version(), doi)
+    path = c(oadoi_api_version(), trimws(doi))
   )
-  # Call oaDOI API
-  resp <- httr::GET(u, ua)
+  # Call Unpaywall Data API
+  resp <- httr::RETRY("GET", u, ua)
 
   # test for valid json
   if (httr::http_type(resp) != "application/json") {
-    # test needed because oaDOI throws 505 when non-encoded whitespace
+    # test needed because Unpaywall throws 505 when non-encoded whitespace
     # is provided by this client
     stop(
       sprintf(
@@ -134,7 +145,7 @@ oadoi_fetch_ <- function(doi = NULL, email = NULL) {
   if (httr::status_code(resp) != 200) {
     warning(
       sprintf(
-        "oaDOI request failed [%s]\n%s",
+        "Unpaywall request failed [%s]\n%s",
         httr::status_code(resp),
         httr::content(resp)$message
       ),
@@ -149,7 +160,7 @@ oadoi_fetch_ <- function(doi = NULL, email = NULL) {
   }
 }
 
-#' Parser for OADOI JSON
+#' Parser for Unpaywall Data JSON
 #'
 #' @param req unparsed JSON
 #'
@@ -162,9 +173,14 @@ parse_oadoi <- function(req) {
     oa_locations = list(as_data_frame(req$oa_location)),
     data_standard = req$data_standard,
     is_oa = req$is_oa,
+    genre = req$genre,
     journal_is_oa = as.logical(ifelse(
       is.na(req$journal_is_oa),
       FALSE, req$journal_is_oa
+    )),
+    journal_is_in_doaj = as.logical(ifelse(
+      is.na(req$journal_is_in_doaj),
+      FALSE, req$journal_is_in_doaj
     )),
     journal_issns = req$journal_issns,
     journal_name = req$journal_name,
@@ -172,7 +188,8 @@ parse_oadoi <- function(req) {
     title = req$title,
     year = as.character(req$year),
     updated = req$updated,
-    non_compliant = list(req$x_reported_noncompliant_copies)
+    non_compliant = list(req$x_reported_noncompliant_copies),
+    authors = list(req$z_authors)
   )
 }
 

@@ -2,13 +2,13 @@
 library(roadoi)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com")
+                    email = "najko.jahn@gmail.com")
 
 ## ------------------------------------------------------------------------
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com") %>%
+                    email = "najko.jahn@gmail.com") %>%
   dplyr::mutate(
     urls = purrr::map(best_oa_location, "url") %>% 
                   purrr::map_if(purrr::is_empty, ~ NA_character_) %>% 
@@ -20,25 +20,31 @@ roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com") %>%
+                    email = "najko.jahn@gmail.com") %>%
   tidyr::unnest(oa_locations) %>% 
   dplyr::mutate(
     hostname = purrr::map(url, httr::parse_url) %>% 
                   purrr::map_chr(., "hostname", .null = NA_integer_)
                 ) %>% 
-  dplyr::mutate(hostname = gsub("www.", "", hostname)) %>% 
-  dplyr::count(hostname)
+  dplyr::mutate(hostname = gsub("www.", "", hostname)) %>%
+  dplyr::group_by(hostname) %>%
+  dplyr::summarize(hosts = n())
 
 ## ------------------------------------------------------------------------
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
-                    email = "name@example.com", 
+                    email = "najko.jahn@gmail.com", 
                     .progress = "text")
 
 ## ------------------------------------------------------------------------
 random_dois <-  c("ldld", "10.1038/ng.3260", "§dldl  ")
-purrr::map_df(random_dois, 
-              plyr::failwith(f = function(x) roadoi::oadoi_fetch(x, email ="name@example.com")))
+my_data <- purrr::map(random_dois, 
+              .f = purrr::safely(function(x) roadoi::oadoi_fetch(x, email ="najko.jahn@gmail.com")))
+# return results as data.frame
+purrr::map_df(my_data, "result")
+#show errors
+purrr::map(my_data, "error")
+
 
 ## ---- message=FALSE------------------------------------------------------
 library(dplyr)
@@ -65,7 +71,10 @@ random_dois %>%
   arrange(desc(pubs))
 
 ## ------------------------------------------------------------------------
-oa_df <- roadoi::oadoi_fetch(dois = random_dois$DOI, email = "name@example.com")
+oa_df <- purrr::map(random_dois$DOI, .f = purrr::safely(
+  function(x) roadoi::oadoi_fetch(x, email = "najko.jahn@gmail.com")
+  )) %>%
+  purrr::map_df("result")
 
 ## ------------------------------------------------------------------------
 my_df <- random_dois %>%
