@@ -11,7 +11,7 @@
 
 <meta name="author" content="Najko Jahn" />
 
-<meta name="date" content="2018-05-02" />
+<meta name="date" content="2018-05-21" />
 
 <title>Introduction to roadoi</title>
 
@@ -306,7 +306,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Introduction to roadoi</h1>
 <h4 class="author"><em>Najko Jahn</em></h4>
-<h4 class="date"><em>2018-05-02</em></h4>
+<h4 class="date"><em>2018-05-21</em></h4>
 
 </div>
 
@@ -334,7 +334,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 ##   doi          best_oa_location oa_locations  data_standard is_oa genre   
 ##   &lt;chr&gt;        &lt;list&gt;           &lt;list&gt;                &lt;int&gt; &lt;lgl&gt; &lt;chr&gt;   
 ## 1 10.1186/s12… &lt;tibble [1 × 9]&gt; &lt;tibble [5 ×…             2 TRUE  journal…
-## 2 10.1103/phy… &lt;tibble [1 × 9]&gt; &lt;tibble [1 ×…             2 TRUE  journal…
+## 2 10.1103/phy… &lt;tibble [1 × 9]&gt; &lt;tibble [2 ×…             2 TRUE  journal…
 ## # ... with 10 more variables: journal_is_oa &lt;lgl&gt;,
 ## #   journal_is_in_doaj &lt;lgl&gt;, journal_issns &lt;chr&gt;, journal_name &lt;chr&gt;,
 ## #   publisher &lt;chr&gt;, title &lt;chr&gt;, year &lt;chr&gt;, updated &lt;chr&gt;,
@@ -468,7 +468,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
                 ) %&gt;%
   .$urls</code></pre>
 <pre><code>## [1] &quot;https://bmcgenomics.biomedcentral.com/track/pdf/10.1186/s12864-016-2566-9?site=bmcgenomics.biomedcentral.com&quot;
-## [2] &quot;http://arxiv.org/pdf/1304.0473&quot;</code></pre>
+## [2] &quot;https://link.aps.org/accepted/10.1103/PhysRevE.88.012814&quot;</code></pre>
 <p>If you want to gather all full-text links and to explore where these links are hosted, simplify the list-column <code>oa_locations</code> with <code>tidyr::unnest()</code>:</p>
 <pre class="r"><code>library(dplyr)
 roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
@@ -482,15 +482,16 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
   dplyr::mutate(hostname = gsub(&quot;www.&quot;, &quot;&quot;, hostname)) %&gt;%
   dplyr::group_by(hostname) %&gt;%
   dplyr::summarize(hosts = n())</code></pre>
-<pre><code>## # A tibble: 6 x 2
+<pre><code>## # A tibble: 7 x 2
 ##   hostname                      hosts
 ##   &lt;chr&gt;                         &lt;int&gt;
 ## 1 arxiv.org                         1
 ## 2 bmcgenomics.biomedcentral.com     1
 ## 3 doi.org                           1
 ## 4 europepmc.org                     1
-## 5 ncbi.nlm.nih.gov                  1
-## 6 pub.uni-bielefeld.de              1</code></pre>
+## 5 link.aps.org                      1
+## 6 ncbi.nlm.nih.gov                  1
+## 7 pub.uni-bielefeld.de              1</code></pre>
 <p>Note that fields to be returned might change according to the <a href="http://unpaywall.org/products/api">Unpaywall API specs</a></p>
 </div>
 <div id="any-api-restrictions" class="section level4">
@@ -516,7 +517,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 ##   doi          best_oa_location oa_locations  data_standard is_oa genre   
 ##   &lt;chr&gt;        &lt;list&gt;           &lt;list&gt;                &lt;int&gt; &lt;lgl&gt; &lt;chr&gt;   
 ## 1 10.1186/s12… &lt;tibble [1 × 9]&gt; &lt;tibble [5 ×…             2 TRUE  journal…
-## 2 10.1103/phy… &lt;tibble [1 × 9]&gt; &lt;tibble [1 ×…             2 TRUE  journal…
+## 2 10.1103/phy… &lt;tibble [1 × 9]&gt; &lt;tibble [2 ×…             2 TRUE  journal…
 ## # ... with 10 more variables: journal_is_oa &lt;lgl&gt;,
 ## #   journal_is_in_doaj &lt;lgl&gt;, journal_issns &lt;chr&gt;, journal_name &lt;chr&gt;,
 ## #   publisher &lt;chr&gt;, title &lt;chr&gt;, year &lt;chr&gt;, updated &lt;chr&gt;,
@@ -528,12 +529,12 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 <pre class="r"><code>random_dois &lt;-  c(&quot;ldld&quot;, &quot;10.1038/ng.3260&quot;, &quot;§dldl  &quot;)
 my_data &lt;- purrr::map(random_dois, 
               .f = purrr::safely(function(x) roadoi::oadoi_fetch(x, email =&quot;najko.jahn@gmail.com&quot;)))</code></pre>
-<pre><code>## Request failed [404]. Retrying in 1.3 seconds...</code></pre>
-<pre><code>## Request failed [404]. Retrying in 1 seconds...</code></pre>
+<pre><code>## Request failed [404]. Retrying in 1 seconds...
+## Request failed [404]. Retrying in 1 seconds...</code></pre>
 <pre><code>## Warning: Unpaywall request failed [404]
 ## 'ldld' is an invalid doi.  See http://doi.org/ldld</code></pre>
-<pre><code>## Request failed [404]. Retrying in 1.6 seconds...</code></pre>
-<pre><code>## Request failed [404]. Retrying in 1.8 seconds...</code></pre>
+<pre><code>## Request failed [404]. Retrying in 1 seconds...</code></pre>
+<pre><code>## Request failed [404]. Retrying in 2.8 seconds...</code></pre>
 <pre><code>## Warning: Unpaywall request failed [404]
 ## '§dldl' is an invalid doi.  See http://doi.org/§dldl</code></pre>
 <pre class="r"><code># return results as data.frame
@@ -571,27 +572,27 @@ random_dois &lt;- rcrossref::cr_r(sample = 100) %&gt;%
   rcrossref::cr_works() %&gt;%
   .$data
 random_dois</code></pre>
-<pre><code>## # A tibble: 100 x 34
-##    container.title    created  deposited DOI    indexed ISSN  issue issued
-##    &lt;chr&gt;              &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; 
-##  1 Zeitschrift für K… 2014-01… 2016-12-… 10.15… 2017-1… 2196… 1-4   1991-…
-##  2 The Welsh History… 2016-01… 2016-01-… 10.16… 2017-1… 0043… 1     2006-…
-##  3 Geochimica et Cos… 2003-08… 2017-06-… 10.10… 2018-0… 0016… 7     1983-…
-##  4 African Studies C… 2014-08… 2018-04-… 10.11… 2018-0… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  
-##  5 2005 IEEE 61st Ve… 2005-12… 2017-03-… 10.11… 2018-0… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  
-##  6 Volume 6: Materia… 2009-07… 2013-07-… 10.11… 2017-1… &lt;NA&gt;  &lt;NA&gt;  2008-…
-##  7 Botanische Jahrbü… 2003-04… 2007-02-… 10.11… 2018-0… 0006… 3     2003-…
-##  8 NeuroImage         2009-11… 2017-06-… 10.10… 2018-0… 1053… 3     2010-…
-##  9 Journal of Abnorm… 2002-07… 2015-04-… 10.10… 2018-0… 0021… 2     1976  
-## 10 Annals of the Rhe… 2011-02… 2016-12-… 10.11… 2018-0… 0003… Supp… 2011-…
-## # ... with 90 more rows, and 26 more variables: member &lt;chr&gt;,
+<pre><code>## # A tibble: 100 x 33
+##    container.title     created  deposited DOI   indexed ISSN  issue issued
+##    &lt;chr&gt;               &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; 
+##  1 Journal of Orthopa… 2009-03… 2018-02-… 10.1… 2018-0… 0890… 3     2008-…
+##  2 Oral Surgery, Oral… 2005-08… 2017-06-… 10.1… 2018-0… 0030… 1     1982-…
+##  3 Verhandlungsberich… 2011-12… 2014-08-… 10.1… 2018-0… 0070… &lt;NA&gt;  1976  
+##  4 The Canadian Journ… 2017-07… 2017-12-… 10.1… 2018-0… 0706… 4     2006-…
+##  5 Filtration Industr… 2012-06… 2016-01-… 10.1… 2018-0… 1365… 5     2012-…
+##  6 PLoS Medicine       2013-05… 2017-06-… 10.1… 2018-0… 1549… 5     2013-…
+##  7 Foundation Science… 2015-12… 2015-12-… 10.1… 2018-0… &lt;NA&gt;  &lt;NA&gt;  1998  
+##  8 Culture, Health &amp; … 2008-04… 2016-12-… 10.1… 2018-0… 1369… sup1  2008-…
+##  9 SAE Technical Pape… 2011-02… 2015-06-… 10.4… 2018-0… &lt;NA&gt;  &lt;NA&gt;  2007-…
+## 10 2009 International… 2009-10… 2017-06-… 10.1… 2018-0… &lt;NA&gt;  &lt;NA&gt;  2009  
+## # ... with 90 more rows, and 25 more variables: member &lt;chr&gt;, page &lt;chr&gt;,
 ## #   prefix &lt;chr&gt;, publisher &lt;chr&gt;, reference.count &lt;chr&gt;, score &lt;chr&gt;,
 ## #   source &lt;chr&gt;, title &lt;chr&gt;, type &lt;chr&gt;, URL &lt;chr&gt;, volume &lt;chr&gt;,
-## #   link &lt;list&gt;, page &lt;chr&gt;, subject &lt;chr&gt;, author &lt;list&gt;,
-## #   alternative.id &lt;chr&gt;, license_date &lt;chr&gt;, license_URL &lt;chr&gt;,
-## #   license_delay.in.days &lt;chr&gt;, license_content.version &lt;chr&gt;,
-## #   ISBN &lt;chr&gt;, funder &lt;list&gt;, update.policy &lt;chr&gt;, abstract &lt;chr&gt;,
-## #   assertion &lt;list&gt;, archive &lt;chr&gt;, subtitle &lt;chr&gt;</code></pre>
+## #   author &lt;list&gt;, alternative.id &lt;chr&gt;, license_date &lt;chr&gt;,
+## #   license_URL &lt;chr&gt;, license_delay.in.days &lt;chr&gt;,
+## #   license_content.version &lt;chr&gt;, link &lt;list&gt;, ISBN &lt;chr&gt;,
+## #   update.policy &lt;chr&gt;, subtitle &lt;chr&gt;, funder &lt;list&gt;, archive &lt;chr&gt;,
+## #   abstract &lt;chr&gt;, assertion &lt;list&gt;</code></pre>
 <p>Let’s see when these random publications were published</p>
 <pre class="r"><code>random_dois %&gt;%
   # convert to years
@@ -600,37 +601,35 @@ random_dois</code></pre>
   group_by(issued) %&gt;%
   summarize(pubs = n()) %&gt;%
   arrange(desc(pubs))</code></pre>
-<pre><code>## # A tibble: 44 x 2
+<pre><code>## # A tibble: 38 x 2
 ##    issued  pubs
 ##     &lt;dbl&gt; &lt;int&gt;
-##  1     NA    10
-##  2   2016     6
-##  3   2011     5
-##  4   2005     4
-##  5   2009     4
-##  6   2017     4
-##  7   1974     3
-##  8   1980     3
-##  9   1988     3
-## 10   1996     3
-## # ... with 34 more rows</code></pre>
+##  1   2008     7
+##  2   2007     6
+##  3   2016     6
+##  4   2002     5
+##  5   2009     5
+##  6   2010     5
+##  7   2015     5
+##  8   2011     4
+##  9   2013     4
+## 10   1982     3
+## # ... with 28 more rows</code></pre>
 <p>and of what type they are</p>
 <pre class="r"><code>random_dois %&gt;%
   group_by(type) %&gt;%
   summarize(pubs = n()) %&gt;%
   arrange(desc(pubs))</code></pre>
-<pre><code>## # A tibble: 9 x 2
+<pre><code>## # A tibble: 7 x 2
 ##   type                 pubs
 ##   &lt;chr&gt;               &lt;int&gt;
-## 1 journal-article        67
-## 2 proceedings-article    11
-## 3 book-chapter           10
-## 4 report                  4
-## 5 dataset                 3
-## 6 component               2
-## 7 journal-issue           1
-## 8 reference-book          1
-## 9 reference-entry         1</code></pre>
+## 1 journal-article        78
+## 2 book-chapter           11
+## 3 proceedings-article     6
+## 4 dataset                 2
+## 5 book                    1
+## 6 component               1
+## 7 reference-entry         1</code></pre>
 </div>
 <div id="calling-unpaywall" class="section level4">
 <h4>Calling Unpaywall</h4>
@@ -665,13 +664,13 @@ random_dois</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">FALSE</td>
-<td align="right">71</td>
-<td align="right">0.71</td>
+<td align="right">83</td>
+<td align="right">0.83</td>
 </tr>
 <tr class="even">
 <td align="left">TRUE</td>
-<td align="right">29</td>
-<td align="right">0.29</td>
+<td align="right">17</td>
+<td align="right">0.17</td>
 </tr>
 </tbody>
 </table>
@@ -695,46 +694,31 @@ random_dois</code></pre>
 <tr class="odd">
 <td align="left">open (via free pdf)</td>
 <td align="left">journal-article</td>
-<td align="right">13</td>
-</tr>
-<tr class="even">
-<td align="left">oa repository (via OAI-PMH title and first author match)</td>
-<td align="left">journal-article</td>
-<td align="right">4</td>
-</tr>
-<tr class="odd">
-<td align="left">open (via free pdf)</td>
-<td align="left">report</td>
-<td align="right">3</td>
+<td align="right">7</td>
 </tr>
 <tr class="even">
 <td align="left">oa journal (via doaj)</td>
 <td align="left">journal-article</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">oa journal (via publisher name)</td>
-<td align="left">component</td>
-<td align="right">2</td>
-</tr>
-<tr class="even">
-<td align="left">open (via page says license)</td>
-<td align="left">journal-article</td>
-<td align="right">2</td>
+<td align="right">4</td>
 </tr>
 <tr class="odd">
 <td align="left">oa repository (via OAI-PMH doi match)</td>
 <td align="left">journal-article</td>
-<td align="right">1</td>
+<td align="right">2</td>
 </tr>
 <tr class="even">
-<td align="left">oa repository (via pmcid lookup)</td>
+<td align="left">oa repository (via OAI-PMH title and first author match)</td>
+<td align="left">journal-article</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">open (via crossref license)</td>
 <td align="left">journal-article</td>
 <td align="right">1</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">open (via page says license)</td>
-<td align="left">proceedings-article</td>
+<td align="left">journal-article</td>
 <td align="right">1</td>
 </tr>
 </tbody>

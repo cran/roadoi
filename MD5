@@ -1,7 +1,7 @@
-725df4dd0ebef4ff4913ef783bfa813d *DESCRIPTION
+3c5234ab9b2c2911c17e511f1c42700e *DESCRIPTION
 c58ebdf5dc373085b973cacfbe313aab *LICENSE
 627ef7ebb42a054710458d85aae0f32f *NAMESPACE
-d3e88acf41b8d3ffa3daab1e2624026d *NEWS
+bd1e060f7f79528e14a51f8b703939a0 *NEWS
 eb636bfda29f431b8ac01032c1c84e49 *R/oadoiAddins.R
 17fc6045f5532239eb7b42c873137568 *R/oadoi_fetch.r
 7102756baba1066f61051eed5ea5f9af *R/roadoi-package.r
@@ -10,7 +10,7 @@ eb636bfda29f431b8ac01032c1c84e49 *R/oadoiAddins.R
 d269bf3288c9e02e8c7daf3c63cc1582 *build/vignette.rds
 6d8256fb188a1179956f288a8fe9002d *inst/doc/intro.R
 fe1c3c3f5cd3654ad0200feef8c96d94 *inst/doc/intro.Rmd
-78d25c79787c90d7bd25fa132f84bfda *inst/doc/intro.html
+55df6ab8660fd41454fd7e57108c7d30 *inst/doc/intro.html
 b2a8dbbedc29cbf4c4af7f7a9e89b7b3 *inst/img/oadoi_addin.gif
 0c3a0fbdcfd30d968956cfde7629af4d *inst/rstudio/addins.dcf
 1d5f9a171413e9477a855e0cc6c67af7 *man/oadoi_fetch.Rd
