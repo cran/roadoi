@@ -11,7 +11,7 @@
 
 <meta name="author" content="Najko Jahn" />
 
-<meta name="date" content="2018-05-21" />
+<meta name="date" content="2018-08-07" />
 
 <title>Introduction to roadoi</title>
 
@@ -306,7 +306,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Introduction to roadoi</h1>
 <h4 class="author"><em>Najko Jahn</em></h4>
-<h4 class="date"><em>2018-05-21</em></h4>
+<h4 class="date"><em>2018-08-07</em></h4>
 
 </div>
 
@@ -333,7 +333,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 <pre><code>## # A tibble: 2 x 16
 ##   doi          best_oa_location oa_locations  data_standard is_oa genre   
 ##   &lt;chr&gt;        &lt;list&gt;           &lt;list&gt;                &lt;int&gt; &lt;lgl&gt; &lt;chr&gt;   
-## 1 10.1186/s12… &lt;tibble [1 × 9]&gt; &lt;tibble [5 ×…             2 TRUE  journal…
+## 1 10.1186/s12… &lt;tibble [1 × 9]&gt; &lt;tibble [6 ×…             2 TRUE  journal…
 ## 2 10.1103/phy… &lt;tibble [1 × 9]&gt; &lt;tibble [2 ×…             2 TRUE  journal…
 ## # ... with 10 more variables: journal_is_oa &lt;lgl&gt;,
 ## #   journal_is_in_doaj &lt;lgl&gt;, journal_issns &lt;chr&gt;, journal_name &lt;chr&gt;,
@@ -450,6 +450,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 <p>There at least <a href="http://r4ds.had.co.nz/many-models.html#simplifying-list-columns">two ways to simplify these list-columns</a>.</p>
 <p>To get the full-text links from the list-column <code>best_oa_location</code>, you may want to use <code>purrr::map_chr()</code>.</p>
 <pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## Warning: package 'dplyr' was built under R version 3.5.1</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'</code></pre>
 <pre><code>## The following objects are masked from 'package:stats':
@@ -491,7 +492,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 ## 4 europepmc.org                     1
 ## 5 link.aps.org                      1
 ## 6 ncbi.nlm.nih.gov                  1
-## 7 pub.uni-bielefeld.de              1</code></pre>
+## 7 pub.uni-bielefeld.de              2</code></pre>
 <p>Note that fields to be returned might change according to the <a href="http://unpaywall.org/products/api">Unpaywall API specs</a></p>
 </div>
 <div id="any-api-restrictions" class="section level4">
@@ -516,7 +517,7 @@ roadoi::oadoi_fetch(dois = c(&quot;10.1186/s12864-016-2566-9&quot;,
 <pre><code>## # A tibble: 2 x 16
 ##   doi          best_oa_location oa_locations  data_standard is_oa genre   
 ##   &lt;chr&gt;        &lt;list&gt;           &lt;list&gt;                &lt;int&gt; &lt;lgl&gt; &lt;chr&gt;   
-## 1 10.1186/s12… &lt;tibble [1 × 9]&gt; &lt;tibble [5 ×…             2 TRUE  journal…
+## 1 10.1186/s12… &lt;tibble [1 × 9]&gt; &lt;tibble [6 ×…             2 TRUE  journal…
 ## 2 10.1103/phy… &lt;tibble [1 × 9]&gt; &lt;tibble [2 ×…             2 TRUE  journal…
 ## # ... with 10 more variables: journal_is_oa &lt;lgl&gt;,
 ## #   journal_is_in_doaj &lt;lgl&gt;, journal_issns &lt;chr&gt;, journal_name &lt;chr&gt;,
@@ -533,8 +534,8 @@ my_data &lt;- purrr::map(random_dois,
 ## Request failed [404]. Retrying in 1 seconds...</code></pre>
 <pre><code>## Warning: Unpaywall request failed [404]
 ## 'ldld' is an invalid doi.  See http://doi.org/ldld</code></pre>
-<pre><code>## Request failed [404]. Retrying in 1 seconds...</code></pre>
-<pre><code>## Request failed [404]. Retrying in 2.8 seconds...</code></pre>
+<pre><code>## Request failed [404]. Retrying in 1.5 seconds...</code></pre>
+<pre><code>## Request failed [404]. Retrying in 1.2 seconds...</code></pre>
 <pre><code>## Warning: Unpaywall request failed [404]
 ## '§dldl' is an invalid doi.  See http://doi.org/§dldl</code></pre>
 <pre class="r"><code># return results as data.frame
@@ -572,27 +573,25 @@ random_dois &lt;- rcrossref::cr_r(sample = 100) %&gt;%
   rcrossref::cr_works() %&gt;%
   .$data
 random_dois</code></pre>
-<pre><code>## # A tibble: 100 x 33
-##    container.title     created  deposited DOI   indexed ISSN  issue issued
-##    &lt;chr&gt;               &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; 
-##  1 Journal of Orthopa… 2009-03… 2018-02-… 10.1… 2018-0… 0890… 3     2008-…
-##  2 Oral Surgery, Oral… 2005-08… 2017-06-… 10.1… 2018-0… 0030… 1     1982-…
-##  3 Verhandlungsberich… 2011-12… 2014-08-… 10.1… 2018-0… 0070… &lt;NA&gt;  1976  
-##  4 The Canadian Journ… 2017-07… 2017-12-… 10.1… 2018-0… 0706… 4     2006-…
-##  5 Filtration Industr… 2012-06… 2016-01-… 10.1… 2018-0… 1365… 5     2012-…
-##  6 PLoS Medicine       2013-05… 2017-06-… 10.1… 2018-0… 1549… 5     2013-…
-##  7 Foundation Science… 2015-12… 2015-12-… 10.1… 2018-0… &lt;NA&gt;  &lt;NA&gt;  1998  
-##  8 Culture, Health &amp; … 2008-04… 2016-12-… 10.1… 2018-0… 1369… sup1  2008-…
-##  9 SAE Technical Pape… 2011-02… 2015-06-… 10.4… 2018-0… &lt;NA&gt;  &lt;NA&gt;  2007-…
-## 10 2009 International… 2009-10… 2017-06-… 10.1… 2018-0… &lt;NA&gt;  &lt;NA&gt;  2009  
-## # ... with 90 more rows, and 25 more variables: member &lt;chr&gt;, page &lt;chr&gt;,
+<pre><code>## # A tibble: 100 x 31
+##    container.title    created  deposited doi    indexed issn  issue issued
+##    &lt;chr&gt;              &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; 
+##  1 The Journal of As… 2006-04… 2017-04-… 10.23… 2018-0… 0021… 2     1976-…
+##  2 Food Additives an… 2002-07… 2016-12-… 10.10… 2018-0… 0265… 9     2000-…
+##  3 American Journal … 2016-04… 2017-06-… 10.10… 2018-0… 0002… 1     2016-…
+##  4 Contemporary Poli… 2008-04… 2016-12-… 10.10… 2018-0… 1356… 1     1999-…
+##  5 Journal of the Ne… 2017-12… 2017-12-… 10.10… 2018-0… 0022… &lt;NA&gt;  2017-…
+##  6 Dissolution Techn… 2015-01… 2017-04-… 10.14… 2018-0… 1521… 2     2009  
+##  7 The Astronomical … 2002-07… 2007-02-… 10.10… 2018-0… 0004… &lt;NA&gt;  1950-…
+##  8 Journal of Thorac… 2008-05… 2017-06-… 10.10… 2018-0… 1556… 3     2007-…
+##  9 Sedimentation Eng… 2013-05… 2017-02-… 10.10… 2018-0… &lt;NA&gt;  &lt;NA&gt;  2008-…
+## 10 OECD Economic Out… 2009-07… 2017-07-… 10.17… 2018-0… 0474… &lt;NA&gt;  2006-…
+## # ... with 90 more rows, and 23 more variables: member &lt;chr&gt;, page &lt;chr&gt;,
 ## #   prefix &lt;chr&gt;, publisher &lt;chr&gt;, reference.count &lt;chr&gt;, score &lt;chr&gt;,
-## #   source &lt;chr&gt;, title &lt;chr&gt;, type &lt;chr&gt;, URL &lt;chr&gt;, volume &lt;chr&gt;,
-## #   author &lt;list&gt;, alternative.id &lt;chr&gt;, license_date &lt;chr&gt;,
-## #   license_URL &lt;chr&gt;, license_delay.in.days &lt;chr&gt;,
-## #   license_content.version &lt;chr&gt;, link &lt;list&gt;, ISBN &lt;chr&gt;,
-## #   update.policy &lt;chr&gt;, subtitle &lt;chr&gt;, funder &lt;list&gt;, archive &lt;chr&gt;,
-## #   abstract &lt;chr&gt;, assertion &lt;list&gt;</code></pre>
+## #   source &lt;chr&gt;, title &lt;chr&gt;, type &lt;chr&gt;, url &lt;chr&gt;, volume &lt;chr&gt;,
+## #   author &lt;list&gt;, link &lt;list&gt;, alternative.id &lt;chr&gt;, update.policy &lt;chr&gt;,
+## #   assertion &lt;list&gt;, license &lt;list&gt;, isbn &lt;chr&gt;, archive &lt;chr&gt;,
+## #   subject &lt;chr&gt;, subtitle &lt;chr&gt;, funder &lt;list&gt;, abstract &lt;chr&gt;</code></pre>
 <p>Let’s see when these random publications were published</p>
 <pre class="r"><code>random_dois %&gt;%
   # convert to years
@@ -601,47 +600,48 @@ random_dois</code></pre>
   group_by(issued) %&gt;%
   summarize(pubs = n()) %&gt;%
   arrange(desc(pubs))</code></pre>
-<pre><code>## # A tibble: 38 x 2
+<pre><code>## # A tibble: 46 x 2
 ##    issued  pubs
 ##     &lt;dbl&gt; &lt;int&gt;
-##  1   2008     7
-##  2   2007     6
-##  3   2016     6
-##  4   2002     5
-##  5   2009     5
-##  6   2010     5
-##  7   2015     5
-##  8   2011     4
-##  9   2013     4
-## 10   1982     3
-## # ... with 28 more rows</code></pre>
+##  1     NA     7
+##  2   2009     5
+##  3   1985     4
+##  4   1991     4
+##  5   2006     4
+##  6   2008     4
+##  7   2011     4
+##  8   2012     4
+##  9   2014     4
+## 10   2015     4
+## # ... with 36 more rows</code></pre>
 <p>and of what type they are</p>
 <pre class="r"><code>random_dois %&gt;%
   group_by(type) %&gt;%
   summarize(pubs = n()) %&gt;%
   arrange(desc(pubs))</code></pre>
-<pre><code>## # A tibble: 7 x 2
+<pre><code>## # A tibble: 8 x 2
 ##   type                 pubs
 ##   &lt;chr&gt;               &lt;int&gt;
-## 1 journal-article        78
+## 1 journal-article        70
 ## 2 book-chapter           11
-## 3 proceedings-article     6
-## 4 dataset                 2
-## 5 book                    1
-## 6 component               1
-## 7 reference-entry         1</code></pre>
+## 3 component               5
+## 4 proceedings-article     5
+## 5 report                  4
+## 6 book                    2
+## 7 reference-entry         2
+## 8 journal-issue           1</code></pre>
 </div>
 <div id="calling-unpaywall" class="section level4">
 <h4>Calling Unpaywall</h4>
 <p>Now let’s call Unpaywall. We are capturing possible errors.</p>
-<pre class="r"><code>oa_df &lt;- purrr::map(random_dois$DOI, .f = purrr::safely(
+<pre class="r"><code>oa_df &lt;- purrr::map(random_dois$doi, .f = purrr::safely(
   function(x) roadoi::oadoi_fetch(x, email = &quot;najko.jahn@gmail.com&quot;)
   )) %&gt;%
   purrr::map_df(&quot;result&quot;)</code></pre>
 <p>and merge the resulting information about open access full-text links with parts of our Crossref metadata-set</p>
 <pre class="r"><code>my_df &lt;- random_dois %&gt;%
-  select(DOI, type) %&gt;% 
-  left_join(oa_df, by = c(&quot;DOI&quot; = &quot;doi&quot;))</code></pre>
+  select(doi, type) %&gt;% 
+  left_join(oa_df, by = c(&quot;doi&quot; = &quot;doi&quot;))</code></pre>
 </div>
 <div id="reporting" class="section level4">
 <h4>Reporting</h4>
@@ -664,13 +664,13 @@ random_dois</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">FALSE</td>
-<td align="right">83</td>
-<td align="right">0.83</td>
+<td align="right">75</td>
+<td align="right">0.75</td>
 </tr>
 <tr class="even">
 <td align="left">TRUE</td>
-<td align="right">17</td>
-<td align="right">0.17</td>
+<td align="right">25</td>
+<td align="right">0.25</td>
 </tr>
 </tbody>
 </table>
@@ -694,17 +694,17 @@ random_dois</code></pre>
 <tr class="odd">
 <td align="left">open (via free pdf)</td>
 <td align="left">journal-article</td>
-<td align="right">7</td>
+<td align="right">10</td>
 </tr>
 <tr class="even">
-<td align="left">oa journal (via doaj)</td>
-<td align="left">journal-article</td>
+<td align="left">oa journal (via publisher name)</td>
+<td align="left">component</td>
 <td align="right">4</td>
 </tr>
 <tr class="odd">
-<td align="left">oa repository (via OAI-PMH doi match)</td>
-<td align="left">journal-article</td>
-<td align="right">2</td>
+<td align="left">open (via free pdf)</td>
+<td align="left">report</td>
+<td align="right">4</td>
 </tr>
 <tr class="even">
 <td align="left">oa repository (via OAI-PMH title and first author match)</td>
@@ -714,11 +714,21 @@ random_dois</code></pre>
 <tr class="odd">
 <td align="left">open (via crossref license)</td>
 <td align="left">journal-article</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">oa journal (via doaj)</td>
+<td align="left">journal-article</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">oa repository (via OAI-PMH doi match)</td>
+<td align="left">journal-article</td>
 <td align="right">1</td>
 </tr>
 <tr class="even">
-<td align="left">open (via page says license)</td>
-<td align="left">journal-article</td>
+<td align="left">open (via free pdf)</td>
+<td align="left">proceedings-article</td>
 <td align="right">1</td>
 </tr>
 </tbody>

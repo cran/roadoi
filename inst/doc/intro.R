@@ -71,15 +71,15 @@ random_dois %>%
   arrange(desc(pubs))
 
 ## ------------------------------------------------------------------------
-oa_df <- purrr::map(random_dois$DOI, .f = purrr::safely(
+oa_df <- purrr::map(random_dois$doi, .f = purrr::safely(
   function(x) roadoi::oadoi_fetch(x, email = "najko.jahn@gmail.com")
   )) %>%
   purrr::map_df("result")
 
 ## ------------------------------------------------------------------------
 my_df <- random_dois %>%
-  select(DOI, type) %>% 
-  left_join(oa_df, by = c("DOI" = "doi"))
+  select(doi, type) %>% 
+  left_join(oa_df, by = c("doi" = "doi"))
 
 ## ---- results='asis'-----------------------------------------------------
 my_df %>%
