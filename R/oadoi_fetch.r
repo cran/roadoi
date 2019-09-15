@@ -11,8 +11,11 @@
 #'   more data, request the data dump \url{https://unpaywall.org/dataset} instead.
 #' @param email character vector, mandatory! Unpaywall requires your email address,
 #'   so that they can track usage and notify you when something breaks.
-#'   Set email address in your `.Rprofile` file with
+#'   Set email address in your `.Renviron` file with
 #'   the option `roadoi_email` \code{options(roadoi_email = "najko.jahn@gmail.com")}.
+#'   You can open your `.Renviron` file calling `file.edit("~/.Renviron")`.
+#'   Save the file and restart your R session. To stop sharing your email
+#'   when using rcrossref, delete it from your `.Renviron` file.
 #' @param .progress Shows the \code{plyr}-style progress bar.
 #'   Options are "none", "text", "tk", "win", and "time".
 #'   See \code{\link[plyr]{create_progress_bar}} for details
@@ -35,19 +38,21 @@
 #'  uses more comprehensive hybrid detection methods. \cr
 #'  \code{is_oa}            \tab Is there an OA copy (logical)? \cr
 #'  \code{genre}            \tab Publication type \cr
+#'  \code{oa_status}        \tab Classifies OA resources by location and license terms as one of: gold, hybrid, bronze, green or closed. See here for more information \url{https://support.unpaywall.org/support/solutions/articles/44001777288-what-do-the-types-of-oa-status-green-gold-hybrid-and-bronze-mean-}. \cr
+#'  \code{has_repository_copy} \tab Is a full-text available in a repository? \cr
 #'  \code{journal_is_oa}    \tab Is the article published in a fully OA journal? \cr
-#'  \code{journal_is_in_doaj} \ Is the journal listed in
+#'  \code{journal_is_in_doaj} \tab Is the journal listed in
 #'   the Directory of Open Access Journals (DOAJ). \cr
 #'  \code{journal_issns}    \tab ISSNs, i.e. unique numbers to identify
 #'  journals. \cr
+#'  \code{journal_issns_l}    \tab Linking ISSN. \cr
 #'  \code{journal_name}     \tab Journal title, not normalized. \cr
 #'  \code{publisher}        \tab Publisher, not normalized. \cr
 #'  \code{title}            \tab Publication title. \cr
 #'  \code{year}             \tab Year published. \cr
+#'  \code{published_date}   \tab Date published. \cr
 #'  \code{updated}          \tab Time when the data for this resource was last updated. \cr
-#'  \code{non_compliant}    \tab Lists other full-text resources that are not
-#'  hosted by either publishers or repositories. \cr
-#'  \code{authors}          \tab Lists author information (if available) \cr
+#'  \code{authors}          \tab Lists author information (if available). \cr
 #' }
 #'
 #' The columns  \code{best_oa_location} and  \code{oa_locations} are list-columns
@@ -71,17 +76,20 @@
 #'
 #' To unnest list-columns, you want to use tidyr's unnest function
 #' \code{\link[tidyr]{unnest}}.
+#'
+#' Note that Unpaywall schema is only informally described.
+#' Check also \url{https://unpaywall.org/data-format}.
 
 #' @examples \dontrun{
 #' oadoi_fetch("10.1038/nature12373", email = "name@example.com")
 #' oadoi_fetch(dois = c("10.1016/j.jbiotec.2010.07.030",
-#' "10.1186/1471-2164-11-245", email = "name@example.com"))
+#' "10.1186/1471-2164-11-245"), email = "name@example.com")
 #' }
 #'
 #' @export
 oadoi_fetch <-
   function(dois = NULL,
-           email = getOption("roadoi_email"),
+           email = Sys.getenv("roadoi_email"),
            .progress = "none") {
     # input validation
     stopifnot(!is.null(dois))
@@ -109,10 +117,13 @@ oadoi_fetch <-
 #' method, returning open access status information from all your requests.
 #'
 #' @param doi character vector,a DOI
-#' @param email character vector, required! It is strongly encourage to tell
-#'   Unpaywall your email adress, so that they can track usage and notify you
-#'   when something breaks. Set email address in your `.Rprofile` file with
-#'   the option `roadoi_email` \code{options(roadoi_email = "name@example.com")}.
+#' @param email character vector, mandatory! Unpaywall requires your email address,
+#'   so that they can track usage and notify you when something breaks.
+#'   Set email address in your `.Renviron` file with
+#'   the option `roadoi_email` \code{options(roadoi_email = "najko.jahn@gmail.com")}.
+#'   You can open your `.Renviron` file calling `file.edit("~/.Renviron")`.
+#'   Save the file and restart your R session. To stop sharing your email
+#'   when using rcrossref, delete it from your `.Renviron` file.
 #' @return A tibble
 #' @examples \dontrun{
 #' oadoi_fetch_(doi = c("10.1016/j.jbiotec.2010.07.030"))
@@ -141,9 +152,9 @@ oadoi_fetch_ <- function(doi = NULL, email = NULL) {
     )
   }
 
-  # warn if nothing could be found and return meaningful message
+  # error if nothing could be found and return meaningful message
   if (httr::status_code(resp) != 200) {
-    warning(
+    stop(
       sprintf(
         "Unpaywall request failed [%s]\n%s",
         httr::status_code(resp),
@@ -170,10 +181,12 @@ parse_oadoi <- function(req) {
   tibble::tibble(
     doi = req$doi,
     best_oa_location = list(oa_lct_parser(req$best_oa_location)),
-    oa_locations = list(as_data_frame(req$oa_location)),
+    oa_locations = list(tibble::as_tibble(req$oa_location)),
     data_standard = req$data_standard,
     is_oa = req$is_oa,
     genre = req$genre,
+    oa_status = req$oa_status,
+    has_repository_copy = req$has_repository_copy,
     journal_is_oa = as.logical(ifelse(
       is.na(req$journal_is_oa),
       FALSE, req$journal_is_oa
@@ -183,12 +196,12 @@ parse_oadoi <- function(req) {
       FALSE, req$journal_is_in_doaj
     )),
     journal_issns = req$journal_issns,
+    journal_issn_l = req$journal_issn_l,
     journal_name = req$journal_name,
     publisher = req$publisher,
     title = req$title,
     year = as.character(req$year),
     updated = req$updated,
-    non_compliant = list(req$x_reported_noncompliant_copies),
     authors = list(req$z_authors)
   )
 }
@@ -203,6 +216,6 @@ oa_lct_parser <- function(x) {
     purrr::compact(x) %>%
       dplyr::bind_rows()
     } else {
-    dplyr::data_frame()
+    tibble::tibble()
   }
 }

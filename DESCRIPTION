@@ -1,7 +1,7 @@
 Package: roadoi
 Type: Package
 Title: Find Free Versions of Scholarly Publications via Unpaywall
-Version: 0.5.2
+Version: 0.6
 Authors@R: c(
     person("Najko", "Jahn", role = c("aut", "cre"), email = "najko.jahn@gmail.com"),
     person("Tuija", "Sonkkila", role = c("rev"), comment = c("Tuija Sonkkila 
@@ -23,11 +23,11 @@ LazyData: TRUE
 Imports: httr, jsonlite, dplyr, plyr, purrr, tibble, miniUI, shiny (>=
         1.0.3), tidyr
 Suggests: roxygen2 (>= 6.0.1), testthat, knitr, covr, rmarkdown,
-        lubridate, rcrossref, lintr
-RoxygenNote: 6.0.1
+        rcrossref, lintr
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2018-08-07 13:31:34 UTC; najkojahn
+Packaged: 2019-09-15 10:27:38 UTC; najkojahn
 Author: Najko Jahn [aut, cre],
   Tuija Sonkkila [rev] (Tuija Sonkkila reviewed the package for rOpenSci,
     see https://github.com/ropensci/onboarding/issues/115,
@@ -37,4 +37,4 @@ Author: Najko Jahn [aut, cre],
     <https://orcid.org/0000-0002-3520-2046>)
 Maintainer: Najko Jahn <najko.jahn@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-08-07 14:00:03 UTC
+Date/Publication: 2019-09-15 11:10:02 UTC

@@ -4,7 +4,7 @@
 \alias{oadoi_fetch}
 \title{Fetch open access status information and full-text links using Unpaywall}
 \usage{
-oadoi_fetch(dois = NULL, email = getOption("roadoi_email"),
+oadoi_fetch(dois = NULL, email = Sys.getenv("roadoi_email"),
   .progress = "none")
 }
 \arguments{
@@ -14,8 +14,11 @@ more data, request the data dump \url{https://unpaywall.org/dataset} instead.}
 
 \item{email}{character vector, mandatory! Unpaywall requires your email address,
 so that they can track usage and notify you when something breaks.
-Set email address in your `.Rprofile` file with
-the option `roadoi_email` \code{options(roadoi_email = "najko.jahn@gmail.com")}.}
+Set email address in your `.Renviron` file with
+the option `roadoi_email` \code{options(roadoi_email = "najko.jahn@gmail.com")}.
+You can open your `.Renviron` file calling `file.edit("~/.Renviron")`.
+Save the file and restart your R session. To stop sharing your email
+when using rcrossref, delete it from your `.Renviron` file.}
 
 \item{.progress}{Shows the \code{plyr}-style progress bar.
 Options are "none", "text", "tk", "win", and "time".
@@ -40,19 +43,21 @@ The result is a tibble with each row representing a publication.
  uses more comprehensive hybrid detection methods. \cr
  \code{is_oa}            \tab Is there an OA copy (logical)? \cr
  \code{genre}            \tab Publication type \cr
+ \code{oa_status}        \tab Classifies OA resources by location and license terms as one of: gold, hybrid, bronze, green or closed. See here for more information \url{https://support.unpaywall.org/support/solutions/articles/44001777288-what-do-the-types-of-oa-status-green-gold-hybrid-and-bronze-mean-}. \cr
+ \code{has_repository_copy} \tab Is a full-text available in a repository? \cr
  \code{journal_is_oa}    \tab Is the article published in a fully OA journal? \cr
- \code{journal_is_in_doaj} \ Is the journal listed in
+ \code{journal_is_in_doaj} \tab Is the journal listed in
   the Directory of Open Access Journals (DOAJ). \cr
  \code{journal_issns}    \tab ISSNs, i.e. unique numbers to identify
  journals. \cr
+ \code{journal_issns_l}    \tab Linking ISSN. \cr
  \code{journal_name}     \tab Journal title, not normalized. \cr
  \code{publisher}        \tab Publisher, not normalized. \cr
  \code{title}            \tab Publication title. \cr
  \code{year}             \tab Year published. \cr
+ \code{published_date}   \tab Date published. \cr
  \code{updated}          \tab Time when the data for this resource was last updated. \cr
- \code{non_compliant}    \tab Lists other full-text resources that are not
- hosted by either publishers or repositories. \cr
- \code{authors}          \tab Lists author information (if available) \cr
+ \code{authors}          \tab Lists author information (if available). \cr
 }
 
 The columns  \code{best_oa_location} and  \code{oa_locations} are list-columns
@@ -76,6 +81,9 @@ These are:
 
 To unnest list-columns, you want to use tidyr's unnest function
 \code{\link[tidyr]{unnest}}.
+
+Note that Unpaywall schema is only informally described.
+Check also \url{https://unpaywall.org/data-format}.
 }
 \description{
 This is the main function to retrieve comprehensive open access status
@@ -88,7 +96,7 @@ For more info see \url{https://unpaywall.org/products/snapshot}.
 \dontrun{
 oadoi_fetch("10.1038/nature12373", email = "name@example.com")
 oadoi_fetch(dois = c("10.1016/j.jbiotec.2010.07.030",
-"10.1186/1471-2164-11-245", email = "name@example.com"))
+"10.1186/1471-2164-11-245"), email = "name@example.com")
 }
 
 }
