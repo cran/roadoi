@@ -15,6 +15,17 @@ test_that("oadoi_fetch returns", {
                            "10.1093/ref:odnb/20344"), email)
   g <- oadoi_fetch(dois = c("10.7717/peerj.2323"), email)
   h <- oadoi_fetch("10.1016/j.aim.2009.06.008", email)
+  # email
+  i <- oadoi_fetch("10.1016/j.aim.2009.06.008", email = "NajkO@GMx.de")
+  #paratext
+  j <- oadoi_fetch("10.1002/bip.21378", email)
+  # flatten
+  k <- oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
+                            "10.1103/physreve.88.012814",
+                            "10.1093/reseval/rvaa038"), email, .flatten = TRUE)
+  # embargoed
+  i <- oadoi_fetch("10.1016/j.cell.2020.12.033", email)
+
 
 
   # correct classes
@@ -26,10 +37,22 @@ test_that("oadoi_fetch returns", {
   expect_is(f, "tbl_df")
   expect_is(g, "tbl_df")
   expect_is(h, "tbl_df")
+  expect_is(i, "tbl_df")
+  expect_is(j, "tbl_df")
+  expect_is(j, "tbl_df")
+  expect_type(k$is_oa, "logical")
+  expect_type(k$is_best, "logical")
+  expect_is(i$oa_locations_embargoed, "list")
+
+
 
   # some character matches
-  expect_match(h$oa_status, "hybrid")
+  expect_match(h$oa_status, "closed")
   expect_match(h$journal_issn_l, "0001-8708")
+  expect_match(a$published_date, "2016-08-09")
+
+  # boolean output
+  expect_false(j$is_paratext)
 
 
 
@@ -40,12 +63,13 @@ test_that("oadoi_fetch returns", {
   expect_equal(nrow(d), 2)
   expect_equal(nrow(e), 1)
   expect_equal(nrow(g), 1)
-  expect_equal(ncol(e), 18)
+  expect_equal(ncol(e), 21)
+  expect_equal(ncol(k), 30)
 
 
 
   # wrong DOI
-  expect_error(oadoi_fetch(dois = c("ldld", "10.1038/ng.3260"), email))
+  expect_warning(oadoi_fetch(dois = c("ldld", "10.1038/ng.3260"), email))
   # wrong .progress value
   expect_warning(oadoi_fetch("10.1038/ng.3260", email, .progress = "TEXT"))
   # empty character
@@ -62,11 +86,3 @@ test_that("emails are validated", {
   expect_error(oadoi_fetch("10.1038/ng.3260", email = "najko@gnx"))
   expect_error(oadoi_fetch("10.1038/ng.3260", email = "FOOL"))
 })
-
-## lintr
-if (requireNamespace("lintr", quietly = TRUE)) {
-  context("lints")
-  test_that("Package Style", {
-    lintr::expect_lint_free()
-  })
-}

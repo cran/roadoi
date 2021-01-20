@@ -1,80 +1,52 @@
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(roadoi)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
                     email = "najko.jahn@gmail.com")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(dplyr)
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
-                             "10.1103/physreve.88.012814"), 
-                    email = "najko.jahn@gmail.com") %>%
-  dplyr::mutate(
-    urls = purrr::map(best_oa_location, "url") %>% 
-                  purrr::map_if(purrr::is_empty, ~ NA_character_) %>% 
-                  purrr::flatten_chr()
-                ) %>%
-  .$urls
+                             "10.1103/physreve.88.012814",
+                             "10.1093/reseval/rvaa038",
+                             "10.1101/2020.05.22.111294",
+                             "10.1093/bioinformatics/btw541"), 
+                    email = "najko.jahn@gmail.com", .flatten = TRUE) %>%
+  dplyr::count(is_oa, evidence, is_best) 
 
-## ------------------------------------------------------------------------
-library(dplyr)
-library(tidyr)
-roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
-                             "10.1103/physreve.88.012814"), 
-                    email = "najko.jahn@gmail.com") %>%
-  tidyr::unnest(oa_locations, names_repair = "universal") %>% 
-  dplyr::mutate(
-    hostname = purrr::map(url, httr::parse_url) %>% 
-                  purrr::map_chr(., "hostname", .null = NA_integer_)
-                ) %>% 
-  dplyr::mutate(hostname = gsub("www.", "", hostname)) %>%
-  dplyr::group_by(hostname) %>%
-  dplyr::summarize(hosts = n())
-
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 roadoi::oadoi_fetch(dois = c("10.1186/s12864-016-2566-9",
                              "10.1103/physreve.88.012814"), 
                     email = "najko.jahn@gmail.com", 
                     .progress = "text")
 
-## ------------------------------------------------------------------------
-random_dois <-  c("ldld", "10.1038/ng.3260", "§dldl  ")
-my_data <- purrr::map(random_dois, 
-              .f = purrr::safely(function(x) roadoi::oadoi_fetch(x, email = "najko.jahn@gmail.com")))
-# return results as data.frame
-purrr::map_df(my_data, "result")
-#show errors
-purrr::map(my_data, "error")
-
-## ---- message=FALSE------------------------------------------------------
+## ---- message=FALSE-----------------------------------------------------------
 library(dplyr)
 library(rcrossref)
 # get a random sample of DOIs and metadata describing these works
-random_dois <- rcrossref::cr_r(sample = 50)
+random_dois <- rcrossref::cr_r(filter = list(
+  issn = "2330-1643", type = "journal-article"
+  ), sample = 50)
 
-## ------------------------------------------------------------------------
-oa_df <- purrr::map(random_dois, .f = purrr::safely(
-  function(x) roadoi::oadoi_fetch(x, email = "najko.jahn@gmail.com")
-  )) %>%
-  purrr::map_df("result")
+## -----------------------------------------------------------------------------
+oa_df <- roadoi::oadoi_fetch(random_dois, 
+                             email = "najko.jahn@gmail.com")
 
-## ---- results='asis'-----------------------------------------------------
-if(!is.null(oa_df))
+## -----------------------------------------------------------------------------
+oa_df
+
+## -----------------------------------------------------------------------------
 oa_df %>%
   group_by(is_oa) %>%
   summarise(Articles = n()) %>%
   mutate(Proportion = Articles / sum(Articles)) %>%
-  arrange(desc(Articles)) %>%
-  knitr::kable()
+  arrange(desc(Articles))
 
-## ---- results='asis'-----------------------------------------------------
-if(!is.null(oa_df))
+## -----------------------------------------------------------------------------
 oa_df %>%
   filter(is_oa == TRUE) %>%
-  select(best_oa_location, genre) %>%
-  tidyr::unnest(best_oa_location) %>% 
-  group_by(evidence, genre) %>%
+  tidyr::unnest(oa_locations) %>% 
+  group_by(oa_status, evidence, is_best) %>%
   summarise(Articles = n()) %>%
-  arrange(desc(Articles)) %>%
-  knitr::kable()
+  arrange(desc(Articles))
 
